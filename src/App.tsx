@@ -1,16 +1,10 @@
 import './App.css';
 import * as react from 'react';
 import axios from 'axios';
-import Register from './Register';
 import Login from './Login';
 import Company from './Company';
 import Employee from './Employee';
 import EditCompany from './EditCompany';
-
-interface ICredential {
-  username: string,
-  password: string
-}
 
 interface ICompany {
   id: string,
@@ -18,17 +12,18 @@ interface ICompany {
 }
 
 interface IEmployee {
-  employee_id: string,
+  company_id: string,
   id: string,
   employee_name: string,
   employee_position: string
 }
 
 interface IState {
+  loginURL: string,
+  registerURL: string,
   register: boolean,
   login: boolean,
   show: boolean,
-  credentials: ICredential,
   regUname: string,
   regPass: string,
   regConfirmPass: string,
@@ -48,13 +43,11 @@ interface IState {
 
 class App extends react.Component<any, IState> {
   state: IState = {
+    loginURL: '',
+    registerURL: '',
     register: false,
     login: false,
     show: false,
-    credentials: {
-      username: 'PJ',
-      password: 'pj'
-    },
     regUname: '',
     regPass: '',
     regConfirmPass: '',
@@ -77,14 +70,12 @@ class App extends react.Component<any, IState> {
     this.getAllEmployees()
   }
 
-  callAPI() {
-    fetch("http://localhost:5000/testAPI")
-      .then(res => res.text())
-      .then(res => this.setState({ apiResponse: res }));
-  }
-
-  componentWillMount() {
-    this.callAPI();
+  getAllCompanyIds() {
+    let ids: string[] = []
+    this.state.companies.forEach(item => {
+      ids.push(item.id)
+    })
+    this.setState({ company_Ids: ids })
   }
 
   options = (i: number) => {
@@ -136,38 +127,29 @@ class App extends react.Component<any, IState> {
 
   login = () => {
     const { uname, pass } = this.state;
-    const { username, password } = this.state.credentials;
-    console.log("CREDENTIALS", uname, pass)
-    // const userAccount = {
-    //   username: uname,
-    //   password: pass
-    // };
-    // axios.post('api/user/login', userAccount)
-    //   .then(res => {
-    //     console.log("RES", res)
-    //     if (res.data.error === false) {
-    //       this.setState({ login: true })
-    //     } else {
-    //       console.log(res, "Invalid credentials!")
-    //       this.setState({ login: false })
-    //     }
-
-    //   })
-    //   .catch(err => {
-    //     console.log(err, "ERROR")
-    //   })
-    if (uname === username && pass === password) {
-      this.setState({ login: true })
+    const userAccount = {
+      username: uname,
+      password: pass
+    };
+    if (uname === '' || pass === '') {
+      alert("All fields are required!")
     } else {
-      this.setState({ login: false })
-      alert("Invalid login credentials!")
-      Array.from(document.querySelectorAll('input')).forEach(
-        input => (input.value = '')
-      );
-      this.setState({ uname: '' })
-      this.setState({ pass: '' })
+      axios.post('api/user/login', userAccount)
+        .then(res => {
+          if (res.data.error === false) {
+            this.setState({ login: true })
+          } else {
+            console.log("Invalid credentials!")
+            this.setState({ login: false })
+          }
+
+        })
+        .catch(err => {
+          console.log(err, "ERROR")
+        })
     }
   }
+
   togglePop = () => {
     this.setState({ show: !this.state.show });
   };
@@ -178,14 +160,13 @@ class App extends react.Component<any, IState> {
 
   getAllCompanies = () => {
     axios.get('api/companies').then(res => {
-      console.log(res.data)
       this.setState({ companies: res.data })
+      this.getAllCompanyIds()
     })
   }
 
   getAllEmployees = () => {
     axios.get('api/employees').then(res => {
-      console.log(res.data)
       this.setState({ employees: res.data })
     })
   }
@@ -203,8 +184,7 @@ class App extends react.Component<any, IState> {
         .then(res => {
           console.log(res, "Company added successfully!")
           this.getAllCompanies()
-          this.setState({ id: res.data.company.generated_keys[0] })
-          this.setState({ company_Ids: [...this.state.company_Ids, this.state.id] })
+          this.getAllCompanyIds()
           console.log("companies", this.state.companies)
           console.log("COMPID", this.state.company_Ids[0])
           Array.from(document.querySelectorAll('input')).forEach(
@@ -219,11 +199,13 @@ class App extends react.Component<any, IState> {
   }
 
   addInputEmployee = () => {
-    axios.post('api/employee', { employee_name: this.state.employeeName })
+
+    axios.post('api/employee', { company_id: this.state.companyId, employee_name: this.state.employeeName, employee_position: this.state.position })
       .then(res => {
-        console.log("Employee added successfully!")
+        console.log("Employee added successfully!", res)
         this.getAllEmployees()
-        this.setState({ employee_id: res.data.company.generated_keys[0] })
+        console.log(this.state.employees)
+        console.log("EMP ID", res.data.company.generated_keys[0])
         Array.from(document.querySelectorAll('input')).forEach(
           input => (input.value = '')
         );
@@ -240,24 +222,29 @@ class App extends react.Component<any, IState> {
 
   }
 
-  deleteCompany = (id: any) => {
-    console.log("ID", id)
-    const compCopy = this.state.companies.filter((item) => item.id !== id);
-    this.setState({ companies: compCopy })
-    const compIdsCopy = this.state.company_Ids.filter((item) => item !== id);
-    this.setState({ company_Ids: compIdsCopy })
-    alert("Successfully deleted!");
-  }
-
   editEmployee = () => {
 
   }
 
+  deleteCompany = (id: any) => {
+    axios.delete('api/companies/' + id)
+      .then(res => {
+        console.log(res, "Deleted")
+        this.getAllCompanies()
+        const compIdsCopy = this.state.company_Ids.filter((item) => item !== id);
+        this.setState({ company_Ids: compIdsCopy })
+        alert("Successfully deleted!");
+      })
+  }
+
   deleteEmployee = (id: any) => {
-    console.log("WOOOOOOOOOOO", id)
-    const empCopy = this.state.employees.filter((item) => item.employee_id !== id);
-    this.setState({ employees: empCopy })
-    alert("Successfully deleted!");
+    console.log("ID", id)
+    axios.delete('api/employees/' + id)
+      .then(res => {
+        console.log(res, "Deleted")
+        this.getAllEmployees()
+        alert("Successfully deleted!");
+      })
   }
 
   render() {
@@ -265,7 +252,6 @@ class App extends react.Component<any, IState> {
     if (!login) {
       return (
         <div>
-          <p className="App-intro">;{this.state.apiResponse}</p>
           <Login inputUname={this.inputUname} inputPass={this.inputPass} login={this.login}></Login>
         </div>
       );
