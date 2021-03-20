@@ -37,7 +37,7 @@
   }
 }
 
-.activity, .employees, .employee, .company, .login {
+.activity, .employees, .employee, .company, .login, .register {
   padding: 50px;
   text-align: center;
   justify-content: center;
@@ -58,8 +58,30 @@
   text-align: center;
 }
 
-.loginBtn {
+.loginBtn, .RegBtn {
   width: 100px;
+}
+
+.signOutBtn {
+  float: right;
+  width: 5%;
+  height: 35px;
+
+}
+
+.toRegBtn, .toLoginBtn {
+  background-color: rgb(255, 194, 204)!important;
+  border: 0px!important;
+}
+
+.toRegBtn :hover{
+  background-color: #e6c9c9!important;
+  color: pink!important;
+}
+
+.toLogin :hover{
+  background-color: #e6c9c9!important;
+  color: purple!important;
 }
 
 .editBtn {

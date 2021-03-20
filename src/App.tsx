@@ -2,9 +2,9 @@ import './App.css';
 import * as react from 'react';
 import axios from 'axios';
 import Login from './Login';
+import Register from './Register';
 import Company from './Company';
 import Employee from './Employee';
-import EditCompany from './EditCompany';
 
 interface ICompany {
   id: string,
@@ -19,11 +19,9 @@ interface IEmployee {
 }
 
 interface IState {
-  loginURL: string,
-  registerURL: string,
   register: boolean,
   login: boolean,
-  show: boolean,
+  showEditCompany: boolean,
   regUname: string,
   regPass: string,
   regConfirmPass: string,
@@ -38,16 +36,16 @@ interface IState {
   companies: ICompany[],
   employees: IEmployee[],
   company_Ids: string[],
+  usernames: string[],
+  users: any[],
   apiResponse: string
 }
 
 class App extends react.Component<any, IState> {
   state: IState = {
-    loginURL: '',
-    registerURL: '',
     register: false,
-    login: false,
-    show: false,
+    login: true,
+    showEditCompany: false,
     regUname: '',
     regPass: '',
     regConfirmPass: '',
@@ -62,15 +60,30 @@ class App extends react.Component<any, IState> {
     companies: [],
     employees: [],
     company_Ids: [],
+    usernames: [],
+    users: [],
     apiResponse: ''
   };
 
-  componentDidMount() {
+  componentDidMount = () => {
     this.getAllCompanies()
     this.getAllEmployees()
+    this.getAllUsernames()
   }
 
-  getAllCompanyIds() {
+  triggerEditCompany = () => {
+    this.setState({ showEditCompany:true })
+  }
+
+  triggerRegister = () => {
+    this.setState({ login: false, register: true })
+  }
+
+  triggerLogin = () => {
+    this.setState({ login: true, register: false })
+  }
+
+  getAllCompanyIds = () => {
     let ids: string[] = []
     this.state.companies.forEach(item => {
       ids.push(item.id)
@@ -85,6 +98,21 @@ class App extends react.Component<any, IState> {
   inputCompName = (e: any) => {
     const { value } = e.target;
     this.setState({ companyName: value });
+  }
+
+  inputRegUname = (e: any) => {
+    const { value } = e.target;
+    this.setState({ regUname: value })
+  }
+
+  inputRegPass = (e: any) => {
+    const { value } = e.target;
+    this.setState({ regPass: value })
+  }
+
+  inputRegConfirmPass = (e: any) => {
+    const { value } = e.target;
+    this.setState({ regConfirmPass: value })
   }
 
   inputUname = (e: any) => {
@@ -125,6 +153,44 @@ class App extends react.Component<any, IState> {
     this.setState({ position: value });
   }
 
+  register = () => {
+    const { regUname, regPass, regConfirmPass } = this.state;
+    const newAccount = {
+      username: regUname,
+      password: regPass
+    }
+    if (regUname === '' || regPass === '' || regConfirmPass === '') {
+      alert("All fields are required!")
+    } else {
+      if (regPass !== regConfirmPass) {
+        alert("Passwords did not match!")
+        Array.from(document.querySelectorAll('input')).forEach(
+          input => (input.value = '')
+        );
+        this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
+      } else {
+        if (this.state.usernames.includes(regUname)) {
+          alert("Username already exist!")
+          Array.from(document.querySelectorAll('input')).forEach(
+            input => (input.value = '')
+          );
+          this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
+        } else {
+          axios.post('api/user/register', newAccount)
+            .then(res => {
+              alert("Sucessfully registered. Sign In now.");
+              this.setState({ login: true })
+            })
+            .catch(err => {
+              alert("Registration failed.");
+              this.setState({ register: true })
+            })
+        }
+      }
+    }
+
+  }
+
   login = () => {
     const { uname, pass } = this.state;
     const userAccount = {
@@ -137,25 +203,16 @@ class App extends react.Component<any, IState> {
       axios.post('api/user/login', userAccount)
         .then(res => {
           if (res.data.error === false) {
-            this.setState({ login: true })
+            this.setState({ login: false, register: false })
           } else {
             console.log("Invalid credentials!")
-            this.setState({ login: false })
+            this.setState({ login: true })
           }
-
         })
         .catch(err => {
           console.log(err, "ERROR")
         })
     }
-  }
-
-  togglePop = () => {
-    this.setState({ show: !this.state.show });
-  };
-
-  onClose = () => {
-    this.setState({ show: this.state.show });
   }
 
   getAllCompanies = () => {
@@ -168,6 +225,17 @@ class App extends react.Component<any, IState> {
   getAllEmployees = () => {
     axios.get('api/employees').then(res => {
       this.setState({ employees: res.data })
+    })
+  }
+
+  getAllUsernames = () => {
+    axios.get('api/users').then(res => {
+      this.setState({ users: res.data })
+      let unames: string[] = []
+      this.state.users.forEach(item => {
+        unames.push(item.username)
+      })
+      this.setState({ usernames: unames })
     })
   }
 
@@ -209,9 +277,7 @@ class App extends react.Component<any, IState> {
         Array.from(document.querySelectorAll('input')).forEach(
           input => (input.value = '')
         );
-        this.setState({ companyId: '' })
-        this.setState({ employeeName: '' })
-        this.setState({ position: '' })
+        this.setState({ companyId: '', employeeName: '', position: '' })
       })
       .catch(err => {
         console.log(err, "Employee was not added.")
@@ -247,28 +313,30 @@ class App extends react.Component<any, IState> {
       })
   }
 
+
   render() {
-    const { register, login } = this.state;
-    if (!login) {
-      return (
-        <div>
-          <Login inputUname={this.inputUname} inputPass={this.inputPass} login={this.login}></Login>
-        </div>
-      );
-    } else {
+    const { login, register } = this.state;
+    if (login === false && register === false) {
       return (
         <div className="">
           <div className="activity">
+            <button className="signOutBtn">Sign Out</button><br /><br />
             <h1 className="header">Companies</h1>
-            <Company togglePop={this.togglePop} companies={this.state.companies} companyName={this.state.companyName} deleteCompany={this.deleteCompany} editCompany={this.editCompany} inputCompName={this.inputCompName} addInputCompany={this.addInputCompany} />
-            <EditCompany show={this.state.show} />
+            <Company showEditCompany={this.state.showEditCompany} triggerEditCompany={this.triggerEditCompany} companies={this.state.companies} companyName={this.state.companyName} deleteCompany={this.deleteCompany} editCompany={this.editCompany} inputCompName={this.inputCompName} addInputCompany={this.addInputCompany} />
           </div>
           <div className="employees">
             <h1 className="header">Employees</h1>
             <Employee company_Ids={this.state.company_Ids} employees={this.state.employees} companyId={this.state.companyId} employeeName={this.state.employeeName} position={this.state.position} editEmployee={this.editEmployee} deleteEmployee={this.deleteEmployee} inputCompId={this.inputCompId} inputEmpName={this.inputEmpName} inputEmpPosition={this.inputEmpPosition} addInputEmployee={this.addInputEmployee} options={this.options} />
           </div>
         </div>
-      );
+      )
+    } else {
+      return (
+        <div>
+          {this.state.login && <Login signUp={this.triggerRegister} inputUname={this.inputUname} inputPass={this.inputPass} login={this.login}></Login>}
+          {this.state.register && <Register signIn={this.triggerLogin} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register}></Register>}
+        </div>
+      )
     }
   }
 }
