@@ -11,22 +11,21 @@ function EditCompany() {
             .then(res => {
                 alert("Updated successfully");
             })
+            .catch(err => {
+                alert("Error.")
+            })
     }
     return (
-        <div className="modal">
-            <div className="modal_content">
-                <div>
-                    <form>
-                        <h3>Edit Company</h3>
-                        <label>
-                            Company Name:
-                            <input onChange={inputNewCompanyName} type="text" name="companyName" />
-                        </label>
-                        <br /><br />
-                        <button onClick={handleEdit} type="submit"></button>
-                    </form>
-                </div>
-            </div>
+        <div className="container">
+                <form onSubmit={(e) => e.preventDefault()}>
+                    <h3>Edit Company Details</h3>
+                    <label>
+                        Company Name:
+                    </label>
+                    <input onChange={inputNewCompanyName} type="text" name="companyName"/>
+                    <br /><br />
+                    <button onClick={handleEdit} type="submit"></button>
+                </form>
         </div>
     );
 }

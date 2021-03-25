@@ -44,14 +44,20 @@
 }
 
 .container {
-  padding-top: 150px;
-  padding-bottom: 150px;
+  padding-top: 120px;
+  padding-bottom: 120px;
   margin-left: 35%;
   margin-right: 30%;
   margin-top: 3%;
   width: 32%!important;
   background-color: red; /* For browsers that do not support gradients */
   background-image: linear-gradient(to bottom right, #f3b3c1 , #e6c9c9);
+}
+
+.editCompany {
+  justify-content: center;
+  text-align: center;
+  align-content: center;
 }
 
 .header {
@@ -63,10 +69,17 @@
 }
 
 .signOutBtn {
+  color: black;
   float: right;
-  width: 5%;
-  height: 35px;
+  width: 100px;
+  height: 45px;
+  background-color: #f3b3c1!important;
+  border-radius: 20px;
+  border: 2px solid #b8b6b6;
+}
 
+.signOutBtn:hover {
+  color: white;
 }
 
 .toRegBtn, .toLoginBtn {
@@ -74,12 +87,12 @@
   border: 0px!important;
 }
 
-.toRegBtn :hover{
+.toRegBtn:hover{
   background-color: #e6c9c9!important;
   color: pink!important;
 }
 
-.toLogin :hover{
+.toLogin:hover{
   background-color: #e6c9c9!important;
   color: purple!important;
 }
@@ -92,6 +105,11 @@
 .deleteBtn {
   width: 80px!important;
   background-color: #f44336!important;
+}
+
+.updateBtn {
+  width: 80px!important;
+  background-color: green!important;
 }
 
 .container input {

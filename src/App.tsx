@@ -12,7 +12,7 @@ interface ICompany {
 }
 
 interface IEmployee {
-  company_id: string,
+  company_name: string,
   id: string,
   employee_name: string,
   employee_position: string
@@ -22,6 +22,7 @@ interface IState {
   register: boolean,
   login: boolean,
   showEditCompany: boolean,
+  showEditEmployee: boolean,
   regUname: string,
   regPass: string,
   regConfirmPass: string,
@@ -36,9 +37,12 @@ interface IState {
   companies: ICompany[],
   employees: IEmployee[],
   company_Ids: string[],
+  company_Names: string[],
   usernames: string[],
   users: any[],
-  apiResponse: string
+  apiResponse: string,
+  idEdit: string,
+  idEmpEdit: string
 }
 
 class App extends react.Component<any, IState> {
@@ -46,6 +50,7 @@ class App extends react.Component<any, IState> {
     register: false,
     login: true,
     showEditCompany: false,
+    showEditEmployee: false,
     regUname: '',
     regPass: '',
     regConfirmPass: '',
@@ -60,10 +65,21 @@ class App extends react.Component<any, IState> {
     companies: [],
     employees: [],
     company_Ids: [],
+    company_Names: [],
     usernames: [],
     users: [],
-    apiResponse: ''
+    apiResponse: '',
+    idEdit: '',
+    idEmpEdit: ''
   };
+
+  // componentWillMount = () => {
+  //   const config = {};
+  //   config.headers = {
+  //     Authorization: "Bearer " + localStorage.getItem("username"), "Access-Control-Allow-Origin": "*"
+  //   };
+  //   this.config = config;
+  // }
 
   componentDidMount = () => {
     this.getAllCompanies()
@@ -75,6 +91,10 @@ class App extends react.Component<any, IState> {
     this.setState({ showEditCompany:true })
   }
 
+  triggerEditEmployee = () => {
+    this.setState({ showEditEmployee:true })
+  }
+
   triggerRegister = () => {
     this.setState({ login: false, register: true })
   }
@@ -83,12 +103,21 @@ class App extends react.Component<any, IState> {
     this.setState({ login: true, register: false })
   }
 
+  getAllCompanyNames = () => {
+    let names: string[] = []
+    this.state.companies.forEach(item => {
+      names.push(item.company_name)
+    })
+    this.setState({ company_Names: names })
+  }
+
   getAllCompanyIds = () => {
     let ids: string[] = []
+    console.log("COMPANIES", this.state.companies)
     this.state.companies.forEach(item => {
       ids.push(item.id)
     })
-    this.setState({ company_Ids: ids })
+    this.setState({ company_Names: ids })
   }
 
   options = (i: number) => {
@@ -128,19 +157,16 @@ class App extends react.Component<any, IState> {
   inputCompId = (e: any) => {
     const { name, value } = e.target;
     // eslint-disable-next-line
-    if (name == "companyId") {
-      const comp_ids = this.state.companies.map((item) => item.id)
-      if (comp_ids.includes(value)) {
+    if (name == "companyName") {
+      const comp_names = this.state.companies.map((item) => item.company_name)
+      if (comp_names.includes(value)) {
         console.log("sucess")
       } else {
         alert("Company does not exist!");
-        Array.from(document.querySelectorAll('input')).forEach(
-          input => (input.value = '')
-        );
-        this.setState({ companyId: '' })
+        this.setState({ companyName: '' })
       }
     }
-    this.setState({ companyId: value });
+    this.setState({ companyName: value });
   }
 
   inputEmpName = (e: any) => {
@@ -164,26 +190,20 @@ class App extends react.Component<any, IState> {
     } else {
       if (regPass !== regConfirmPass) {
         alert("Passwords did not match!")
-        Array.from(document.querySelectorAll('input')).forEach(
-          input => (input.value = '')
-        );
         this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
       } else {
         if (this.state.usernames.includes(regUname)) {
           alert("Username already exist!")
-          Array.from(document.querySelectorAll('input')).forEach(
-            input => (input.value = '')
-          );
           this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
         } else {
           axios.post('api/user/register', newAccount)
             .then(res => {
-              alert("Sucessfully registered. Sign In now.");
-              this.setState({ login: true })
+              alert("Sucessfully registered. Sign in now.");
+              this.setState({ regUname: '', regPass: '', regConfirmPass: '', login: true, register: false })
             })
             .catch(err => {
               alert("Registration failed.");
-              this.setState({ register: true })
+              this.setState({ regUname: '', regPass: '', regConfirmPass: '', register: true })
             })
         }
       }
@@ -203,22 +223,30 @@ class App extends react.Component<any, IState> {
       axios.post('api/user/login', userAccount)
         .then(res => {
           if (res.data.error === false) {
+            localStorage.setItem("username", res.data.user[0].username);
             this.setState({ login: false, register: false })
           } else {
             console.log("Invalid credentials!")
-            this.setState({ login: true })
+            this.setState({ uname: '', pass: '', login: true})
           }
         })
         .catch(err => {
+          alert("Invalid credentials!");
           console.log(err, "ERROR")
+          this.setState({ uname: '', pass: ''})
         })
     }
+  }
+
+  logout = () => {
+    localStorage.removeItem("username");
+    this.setState({login: true, register: true})
   }
 
   getAllCompanies = () => {
     axios.get('api/companies').then(res => {
       this.setState({ companies: res.data })
-      this.getAllCompanyIds()
+      this.getAllCompanyNames()
     })
   }
 
@@ -243,53 +271,34 @@ class App extends react.Component<any, IState> {
     const company_names = this.state.companies.map((item) => item.company_name)
     if (company_names.includes(this.state.companyName)) {
       alert("Company already exist!");
-      Array.from(document.querySelectorAll('input')).forEach(
-        input => (input.value = '')
-      );
       this.setState({ companyName: '' })
     } else {
       axios.post('api/company', { company_name: this.state.companyName })
         .then(res => {
           console.log(res, "Company added successfully!")
           this.getAllCompanies()
+          this.getAllCompanyNames()
           this.getAllCompanyIds()
-          console.log("companies", this.state.companies)
-          console.log("COMPID", this.state.company_Ids[0])
-          Array.from(document.querySelectorAll('input')).forEach(
-            input => (input.value = '')
-          );
           this.setState({ companyName: '' })
         })
         .catch(err => {
           console.log(err, "Company was not added.")
+          this.setState({ companyName: '' })
         })
     }
   }
 
   addInputEmployee = () => {
-
-    axios.post('api/employee', { company_id: this.state.companyId, employee_name: this.state.employeeName, employee_position: this.state.position })
+    axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position })
       .then(res => {
         console.log("Employee added successfully!", res)
         this.getAllEmployees()
-        console.log(this.state.employees)
-        console.log("EMP ID", res.data.company.generated_keys[0])
-        Array.from(document.querySelectorAll('input')).forEach(
-          input => (input.value = '')
-        );
-        this.setState({ companyId: '', employeeName: '', position: '' })
+        this.setState({ companyName: '', employeeName: '', position: '' })
       })
       .catch(err => {
         console.log(err, "Employee was not added.")
+        this.setState({ companyName: '', employeeName: '', position: '' })
       })
-  }
-
-  editCompany = () => {
-
-  }
-
-  editEmployee = () => {
-
   }
 
   deleteCompany = (id: any) => {
@@ -313,20 +322,27 @@ class App extends react.Component<any, IState> {
       })
   }
 
+  setIdEdit = (id: any) => {
+    this.setState({ idEdit: id})
+  }
+
+  setIdEmpEdit = (id: any) => {
+    this.setState({ idEmpEdit: id })
+  }
 
   render() {
     const { login, register } = this.state;
-    if (login === false && register === false) {
+    if (login === false && register === false && localStorage.getItem("username") !== '') {
       return (
         <div className="">
           <div className="activity">
-            <button className="signOutBtn">Sign Out</button><br /><br />
+            <button className="signOutBtn" onClick={this.logout}>Sign Out</button><br /><br />
             <h1 className="header">Companies</h1>
-            <Company showEditCompany={this.state.showEditCompany} triggerEditCompany={this.triggerEditCompany} companies={this.state.companies} companyName={this.state.companyName} deleteCompany={this.deleteCompany} editCompany={this.editCompany} inputCompName={this.inputCompName} addInputCompany={this.addInputCompany} />
+            <Company getAllCompanies={this.getAllCompanies} setIdEdit={this.setIdEdit} idEdit={this.state.idEdit} companies={this.state.companies} companyName={this.state.companyName} deleteCompany={this.deleteCompany} inputCompName={this.inputCompName} addInputCompany={this.addInputCompany} />
           </div>
           <div className="employees">
             <h1 className="header">Employees</h1>
-            <Employee company_Ids={this.state.company_Ids} employees={this.state.employees} companyId={this.state.companyId} employeeName={this.state.employeeName} position={this.state.position} editEmployee={this.editEmployee} deleteEmployee={this.deleteEmployee} inputCompId={this.inputCompId} inputEmpName={this.inputEmpName} inputEmpPosition={this.inputEmpPosition} addInputEmployee={this.addInputEmployee} options={this.options} />
+            <Employee getAllEmployees={this.getAllEmployees} setIdEmpEdit={this.setIdEmpEdit} idEmpEdit={this.state.idEmpEdit} company_Names={this.state.company_Names} company_Ids={this.state.company_Ids} employees={this.state.employees} companyName={this.state.companyName} employeeName={this.state.employeeName} position={this.state.position} deleteEmployee={this.deleteEmployee} inputCompId={this.inputCompId} inputEmpName={this.inputEmpName} inputEmpPosition={this.inputEmpPosition} addInputEmployee={this.addInputEmployee} options={this.options} />
           </div>
         </div>
       )
