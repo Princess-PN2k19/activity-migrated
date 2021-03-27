@@ -54,7 +54,7 @@
   background-image: linear-gradient(to bottom right, #f3b3c1 , #e6c9c9);
 }
 
-.editCompany {
+.editCompany, .editEmployee {
   justify-content: center;
   text-align: center;
   align-content: center;
@@ -69,17 +69,21 @@
 }
 
 .signOutBtn {
-  color: black;
   float: right;
-  width: 100px;
+  background-color: black;
+  color: white;
+  border: 2px solid #555555;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  width: 8%;
   height: 45px;
-  background-color: #f3b3c1!important;
-  border-radius: 20px;
-  border: 2px solid #b8b6b6;
+  margin: 2px;
 }
 
 .signOutBtn:hover {
-  color: white;
+  background-color: white!important;
+  color: black!important;
 }
 
 .toRegBtn, .toLoginBtn {
@@ -88,28 +92,31 @@
 }
 
 .toRegBtn:hover{
-  background-color: #e6c9c9!important;
-  color: pink!important;
+  color: white!important;
 }
 
 .toLogin:hover{
-  background-color: #e6c9c9!important;
-  color: purple!important;
+  color: white!important;
 }
 
 .editBtn {
   width: 80px!important;
-  background-color: #008CBA!important;
+  background-color: #61ccf0!important;
 }
 
 .deleteBtn {
   width: 80px!important;
-  background-color: #f44336!important;
+  background-color: #f56e64!important;
 }
 
 .updateBtn {
   width: 80px!important;
-  background-color: green!important;
+  background-color: rgb(118, 218, 118)!important;
+}
+
+.cancelBtn {
+  width: 80px!important;
+  background-color: rgb(247, 186, 74)!important;
 }
 
 .container input {
@@ -129,6 +136,16 @@
 .company input {
   font-size: 18px;
   width: 25%;
+  height: 40px;
+  border-radius: 4px;
+  position: relative;
+  background-color: rgba(255,255,255,0.3);
+  transition: 0.3s all;
+}
+
+.editCompanyInput, .editEmployeeCompany, .editEmployeeName, .editEmployeePosition {
+  font-size: 18px;
+  width: 90%!important;
   height: 40px;
   border-radius: 4px;
   position: relative;
@@ -223,12 +240,17 @@ thead {
 
 td, th {
   border: 1px solid #dddddd;
-  text-align: left;
+  text-align: center;
   padding: 8px;
 }
 
+th {
+  background-color: rgb(107, 101, 102);
+  color: white;
+}
+
 tr:nth-child(even) {
-  background-color: #dddddd;
+  background-color: #d4d3d39f;
 }
 
 .employee {
@@ -237,14 +259,24 @@ tr:nth-child(even) {
   justify-content: center;
 }
 
-.modal {
-  display: none;
+.mymodal {
   position: fixed;
-  z-index: 1;
-  background-color: rgba(0, 0, 0, 0.25);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #ccc;
+  background: #fff;
+  overflow: auto;
+  border-radius: 4px;
+  outline: none;
+  padding: 20px;
 }
 
-.modal_content {
-  background-color: white;
-  position: absolute;
+.myoverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(71, 68, 68, 0.75);
 }

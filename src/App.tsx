@@ -11,6 +11,11 @@ interface ICompany {
   company_name: string
 }
 
+interface IPosition {
+  id: string,
+  role: string
+}
+
 interface IEmployee {
   company_name: string,
   id: string,
@@ -29,11 +34,16 @@ interface IState {
   uname: string,
   pass: string,
   companyName: string,
+  newCompanyName: string,
+  newEmployeeCompany: string,
+  newEmployeeName: string,
+  newPosition: string,
   companyId: string,
   employeeName: string,
   position: string,
   id: string,
   employee_id: string,
+  positions: IPosition[],
   companies: ICompany[],
   employees: IEmployee[],
   company_Ids: string[],
@@ -57,11 +67,16 @@ class App extends react.Component<any, IState> {
     uname: '',
     pass: '',
     companyName: '',
+    newCompanyName: '',
+    newEmployeeCompany: '',
+    newEmployeeName: '',
+    newPosition: '',
     companyId: '',
     employeeName: '',
     position: '',
     id: '',
     employee_id: '',
+    positions: [],
     companies: [],
     employees: [],
     company_Ids: [],
@@ -73,30 +88,29 @@ class App extends react.Component<any, IState> {
     idEmpEdit: ''
   };
 
-  // componentWillMount = () => {
-  //   const config = {};
-  //   config.headers = {
-  //     Authorization: "Bearer " + localStorage.getItem("username"), "Access-Control-Allow-Origin": "*"
-  //   };
-  //   this.config = config;
-  // }
-
   componentDidMount = () => {
     this.getAllCompanies()
     this.getAllEmployees()
     this.getAllUsernames()
+    this.getAllPositions()
   }
 
   triggerEditCompany = () => {
-    this.setState({ showEditCompany:true })
+    this.setState({ showEditCompany: true })
   }
 
   triggerEditEmployee = () => {
-    this.setState({ showEditEmployee:true })
+    this.setState({ showEditEmployee: true })
   }
 
   triggerRegister = () => {
+    this.getAllUsernames()
     this.setState({ login: false, register: true })
+  }
+
+  logout = () => {
+    this.setState({ login: true, register: false })
+    localStorage.removeItem("username");
   }
 
   triggerLogin = () => {
@@ -111,17 +125,12 @@ class App extends react.Component<any, IState> {
     this.setState({ company_Names: names })
   }
 
-  getAllCompanyIds = () => {
-    let ids: string[] = []
-    console.log("COMPANIES", this.state.companies)
-    this.state.companies.forEach(item => {
-      ids.push(item.id)
-    })
-    this.setState({ company_Names: ids })
+  options = (i: number, index: number) => {
+    return <option key={`${index}-test`}>{i}</option>
   }
 
-  options = (i: number) => {
-    return <option key={i}>{i}</option>
+  choices = (id: number, index: number) => {
+    return <option key={`${index}-test`}>{id}</option>
   }
 
   inputCompName = (e: any) => {
@@ -155,17 +164,7 @@ class App extends react.Component<any, IState> {
   }
 
   inputCompId = (e: any) => {
-    const { name, value } = e.target;
-    // eslint-disable-next-line
-    if (name == "companyName") {
-      const comp_names = this.state.companies.map((item) => item.company_name)
-      if (comp_names.includes(value)) {
-        console.log("sucess")
-      } else {
-        alert("Company does not exist!");
-        this.setState({ companyName: '' })
-      }
-    }
+    const { value } = e.target;
     this.setState({ companyName: value });
   }
 
@@ -179,6 +178,53 @@ class App extends react.Component<any, IState> {
     this.setState({ position: value });
   }
 
+  inputNewCompanyName = (e: any, index: number) => {
+    const { value } = e.target;
+    const companies = [...this.state.companies];
+    companies[index] = { ...companies[index], company_name: value };
+    this.setState({ companies, newCompanyName: value });
+  }
+
+  inputNewEmployeeCompany = (e: any, index: number) => {
+    const { value } = e.target;
+    const employees = [...this.state.employees];
+    employees[index] = { ...employees[index], company_name: value };
+    this.setState({ employees, newEmployeeCompany: value });
+  }
+
+  inputNewPosition = (e: any, index: number) => {
+    const { value } = e.target;
+    const employees = [...this.state.employees];
+    employees[index] = { ...employees[index], employee_position: value };
+    this.setState({ employees, newPosition: value });
+  }
+
+  inputNewEmployeeName = (e: any, index: number) => {
+    const { value } = e.target;
+    const employees = [...this.state.employees];
+    employees[index] = { ...employees[index], employee_name: value };
+    this.setState({ employees, newEmployeeName: value });
+
+  }
+
+  handleEdit = (id: any) => {
+    if (this.state.newEmployeeCompany === "" || this.state.newEmployeeName === "" || this.state.newPosition === "") {
+      alert("All fields are required!");
+    } else {
+      axios.put('api/employees' + id, { company_name: this.state.newEmployeeCompany, employee_name: this.state.newEmployeeName, employee_position: this.state.newPosition })
+        .then(res => {
+          console.log("SUCCESS", res)
+          alert("Updated successfully!");
+          this.getAllEmployees()
+          this.setIdEmpEdit('')
+        })
+        .catch(err => {
+          console.log("ERROR", err)
+          alert("Error.")
+        })
+    }
+  }
+
   register = () => {
     const { regUname, regPass, regConfirmPass } = this.state;
     const newAccount = {
@@ -190,11 +236,12 @@ class App extends react.Component<any, IState> {
     } else {
       if (regPass !== regConfirmPass) {
         alert("Passwords did not match!")
-        this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
+        this.setState({ regUname: '', regPass: '', regConfirmPass: ''})
       } else {
+        console.log(this.state.usernames)
         if (this.state.usernames.includes(regUname)) {
           alert("Username already exist!")
-          this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
+          this.setState({ regUname: '', regPass: '', regConfirmPass: ''})
         } else {
           axios.post('api/user/register', newAccount)
             .then(res => {
@@ -202,6 +249,7 @@ class App extends react.Component<any, IState> {
               this.setState({ regUname: '', regPass: '', regConfirmPass: '', login: true, register: false })
             })
             .catch(err => {
+              console.log("acc", newAccount)
               alert("Registration failed.");
               this.setState({ regUname: '', regPass: '', regConfirmPass: '', register: true })
             })
@@ -224,47 +272,64 @@ class App extends react.Component<any, IState> {
         .then(res => {
           if (res.data.error === false) {
             localStorage.setItem("username", res.data.user[0].username);
+            localStorage.getItem("username")
             this.setState({ login: false, register: false })
           } else {
             console.log("Invalid credentials!")
-            this.setState({ uname: '', pass: '', login: true})
+            this.setState({ uname: '', pass: '', login: true })
           }
         })
         .catch(err => {
           alert("Invalid credentials!");
           console.log(err, "ERROR")
-          this.setState({ uname: '', pass: ''})
+          this.setState({ uname: '', pass: '' })
         })
     }
+    this.setState({ uname: '', pass: '' })
   }
 
-  logout = () => {
-    localStorage.removeItem("username");
-    this.setState({login: true, register: true})
+  getAllPositions = () => {
+    axios.get('api/positions')
+      .then(res => {
+        this.setState({ positions: res.data })
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   getAllCompanies = () => {
-    axios.get('api/companies').then(res => {
-      this.setState({ companies: res.data })
-      this.getAllCompanyNames()
-    })
+    axios.get('api/companies')
+      .then(res => {
+        this.setState({ companies: res.data })
+        this.getAllCompanyNames()
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   getAllEmployees = () => {
-    axios.get('api/employees').then(res => {
-      this.setState({ employees: res.data })
-    })
+    axios.get('api/employees')
+      .then(res => {
+        this.setState({ employees: res.data })
+      })
+      .catch(err => { console.log(err) })
   }
 
   getAllUsernames = () => {
-    axios.get('api/users').then(res => {
-      this.setState({ users: res.data })
-      let unames: string[] = []
-      this.state.users.forEach(item => {
-        unames.push(item.username)
+    axios.get('api/users')
+      .then(res => {
+        this.setState({ users: res.data })
+        let unames: string[] = []
+        this.state.users.forEach(item => {
+          unames.push(item.username)
+        })
+        this.setState({ usernames: unames })
       })
-      this.setState({ usernames: unames })
-    })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   addInputCompany = () => {
@@ -273,32 +338,39 @@ class App extends react.Component<any, IState> {
       alert("Company already exist!");
       this.setState({ companyName: '' })
     } else {
-      axios.post('api/company', { company_name: this.state.companyName })
-        .then(res => {
-          console.log(res, "Company added successfully!")
-          this.getAllCompanies()
-          this.getAllCompanyNames()
-          this.getAllCompanyIds()
-          this.setState({ companyName: '' })
-        })
-        .catch(err => {
-          console.log(err, "Company was not added.")
-          this.setState({ companyName: '' })
-        })
+      if (this.state.companyName === '') {
+        alert("Input field cannot be empty!");
+      } else {
+        axios.post('api/company', { company_name: this.state.companyName })
+          .then(res => {
+            console.log(res, "Company added successfully!")
+            this.getAllCompanies()
+            this.getAllCompanyNames()
+            this.setState({ companyName: '' })
+          })
+          .catch(err => {
+            console.log(err, "Failed.")
+            this.setState({ companyName: '' })
+          })
+      }
     }
   }
 
   addInputEmployee = () => {
-    axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position })
-      .then(res => {
-        console.log("Employee added successfully!", res)
-        this.getAllEmployees()
-        this.setState({ companyName: '', employeeName: '', position: '' })
-      })
-      .catch(err => {
-        console.log(err, "Employee was not added.")
-        this.setState({ companyName: '', employeeName: '', position: '' })
-      })
+    if (this.state.companyName === '' || this.state.employeeName === '' || this.state.position === '') {
+      alert("All fields are required!")
+    } else {
+      axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position })
+        .then(res => {
+          console.log("Employee added successfully!", res)
+          this.getAllEmployees()
+          this.setState({ companyName: '', employeeName: '', position: '' })
+        })
+        .catch(err => {
+          console.log(err, "Employee was not added.")
+          this.setState({ companyName: '', employeeName: '', position: '' })
+        })
+    }
   }
 
   deleteCompany = (id: any) => {
@@ -313,7 +385,6 @@ class App extends react.Component<any, IState> {
   }
 
   deleteEmployee = (id: any) => {
-    console.log("ID", id)
     axios.delete('api/employees/' + id)
       .then(res => {
         console.log(res, "Deleted")
@@ -323,7 +394,7 @@ class App extends react.Component<any, IState> {
   }
 
   setIdEdit = (id: any) => {
-    this.setState({ idEdit: id})
+    this.setState({ idEdit: id })
   }
 
   setIdEmpEdit = (id: any) => {
@@ -331,18 +402,19 @@ class App extends react.Component<any, IState> {
   }
 
   render() {
-    const { login, register } = this.state;
-    if (login === false && register === false && localStorage.getItem("username") !== '') {
+    const { login, register, regUname, regPass, regConfirmPass } = this.state;
+    console.log("STATES", regUname, regPass, regConfirmPass)
+    if (login === false && register === false && localStorage.getItem("username")) {
       return (
         <div className="">
           <div className="activity">
             <button className="signOutBtn" onClick={this.logout}>Sign Out</button><br /><br />
             <h1 className="header">Companies</h1>
-            <Company getAllCompanies={this.getAllCompanies} setIdEdit={this.setIdEdit} idEdit={this.state.idEdit} companies={this.state.companies} companyName={this.state.companyName} deleteCompany={this.deleteCompany} inputCompName={this.inputCompName} addInputCompany={this.addInputCompany} />
+            <Company newCompanyName={this.state.newCompanyName} inputNewCompanyName={this.inputNewCompanyName} getAllCompanies={this.getAllCompanies} setIdEdit={this.setIdEdit} idEdit={this.state.idEdit} companies={this.state.companies} companyName={this.state.companyName} deleteCompany={this.deleteCompany} inputCompName={this.inputCompName} addInputCompany={this.addInputCompany} />
           </div>
           <div className="employees">
             <h1 className="header">Employees</h1>
-            <Employee getAllEmployees={this.getAllEmployees} setIdEmpEdit={this.setIdEmpEdit} idEmpEdit={this.state.idEmpEdit} company_Names={this.state.company_Names} company_Ids={this.state.company_Ids} employees={this.state.employees} companyName={this.state.companyName} employeeName={this.state.employeeName} position={this.state.position} deleteEmployee={this.deleteEmployee} inputCompId={this.inputCompId} inputEmpName={this.inputEmpName} inputEmpPosition={this.inputEmpPosition} addInputEmployee={this.addInputEmployee} options={this.options} />
+            <Employee handleEdit={this.handleEdit} inputNewEmployeeName={this.inputNewEmployeeName} inputNewPosition={this.inputNewPosition} inputNewEmployeeCompany={this.inputNewEmployeeCompany} positions={this.state.positions} setIdEmpEdit={this.setIdEmpEdit} idEmpEdit={this.state.idEmpEdit} company_Names={this.state.company_Names} company_Ids={this.state.company_Ids} employees={this.state.employees} companyName={this.state.companyName} employeeName={this.state.employeeName} position={this.state.position} deleteEmployee={this.deleteEmployee} inputCompId={this.inputCompId} inputEmpName={this.inputEmpName} inputEmpPosition={this.inputEmpPosition} addInputEmployee={this.addInputEmployee} options={this.options} choices={this.choices} />
           </div>
         </div>
       )

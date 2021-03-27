@@ -1,12 +1,9 @@
 import './App.css';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link
-} from "react-router-dom";
 import axios from "axios";
-import { useState } from "react";
+import Modal from "react-modal";
+import React, { useState } from "react";
+Modal.setAppElement("#root");
+
 
 interface ICompany {
     id: string,
@@ -21,59 +18,15 @@ interface IProps {
     deleteCompany: any,
     idEdit: string,
     setIdEdit: any,
-    getAllCompanies: any
+    getAllCompanies: any,
+    inputNewCompanyName: any,
+    newCompanyName: string
 
 }
 
 function Companies(props: IProps) {
-    const { companies, companyName, inputCompName, addInputCompany, deleteCompany, setIdEdit } = props;
-
-
-    return (
-        <Router>
-            <div className="company">
-                <form onSubmit={(e) => e.preventDefault()}>
-                    <input name="companyName" type="text" onChange={inputCompName} placeholder="Enter a company" required>
-                    </input>
-                    <button type="submit" disabled={!companyName} onClick={addInputCompany} >Add</button>
-                </form>
-                <br /><br />
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Company Name</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {companies.map((item, index) => (
-                            <tr key={index}>
-                                <td>{item.company_name}</td>
-                                <td>
-                                    <Link to="/edit-company"><button className="editBtn" onClick={() => { setIdEdit(item.id) }}>Edit</button></Link>
-                                    <button className="deleteBtn" onClick={() => deleteCompany(item.id)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                <Switch>
-                    <Route path="/edit-company">
-                        <Edit getAllCompanies={props.getAllCompanies} idEdit={props.idEdit} companies={props.companies} companyName={props.companyName} inputCompName={props.inputCompName} addInputCompany={props.addInputCompany} deleteCompany={props.deleteCompany} setIdEdit={props.setIdEdit} />
-                    </Route>
-                </Switch>
-            </div>
-        </Router>
-    );
-}
-
-function Edit(props: IProps) {
-    const { idEdit, getAllCompanies } = props;
-    const [newCompanyName, setNewCompanyName] = useState("")
-    const inputNewCompanyName = (e: any) => {
-        setNewCompanyName(e.target.value)
-    }
+    const { companies, companyName, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompanies, inputNewCompanyName, newCompanyName } = props;
+    const [isOpen, setIsOpen] = useState(false);
     const handleEdit = (id: any) => {
         if (newCompanyName === "") {
             alert("New company name field cannot be empty!");
@@ -83,6 +36,8 @@ function Edit(props: IProps) {
                     console.log("SUCCESS", res)
                     alert("Updated successfully!");
                     getAllCompanies()
+                    setIdEdit('')
+
                 })
                 .catch(err => {
                     console.log("ERROR", err)
@@ -90,15 +45,54 @@ function Edit(props: IProps) {
                 })
         }
     }
+
+    const handleCancel = () => {
+        setIdEdit('')
+    }
+
+
+
+    const toggleModal = () => {
+        setIsOpen(!isOpen);
+    }
+
     return (
-        <div className="editCompany">
+        <div className="company">
             <form onSubmit={(e) => e.preventDefault()}>
-                <h2>Edit Company Details</h2>
-                <input onChange={inputNewCompanyName} type="text" name="newCompanyName" placeholder="New company name" />
-                <button disabled={!newCompanyName} onClick={() => handleEdit(idEdit)} type="submit" className="updateBtn">Save</button>
+                <input name="companyName" type="text" onChange={inputCompName} placeholder="Enter a company" required>
+                </input>
+                <button type="submit" disabled={!companyName} onClick={addInputCompany} >Add</button>
             </form>
+            <br /><br />
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {companies.map((item, index) => (
+                        item.id === idEdit ? <tr key={index}>
+                            <td><input className="editCompanyInput" value={item.company_name} onChange={(e) => inputNewCompanyName(e, index)}></input></td>
+                            <td><button className="updateBtn" onClick={() => handleEdit(idEdit)}>Save</button>
+                                <button className="cancelBtn" onClick={() => handleCancel()}>Cancel</button>
+                            </td></tr> : <tr key={index}>
+                                <td>{item.company_name}</td>
+                                <td><button className="editBtn" onClick={() => { setIdEdit(item.id) }}>Edit</button>
+                                    <button className="deleteBtn" onClick={toggleModal}>Delete</button>
+                                    <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
+                                        <div>Are you sure you want to delete this company?</div><br></br>
+                                        <button className="deleteBtn" onClick={() => {toggleModal(); deleteCompany(item.id);}}>Yes</button>
+                                        <button className="cancelBtn" onClick={toggleModal}>Cancel</button>
+                                    </Modal>
+                                </td>
+                            </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
-    )
+    );
 }
 
 export default Companies;
