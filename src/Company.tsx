@@ -18,6 +18,8 @@ interface IProps {
     deleteCompany: any,
     idEdit: string,
     setIdEdit: any,
+    idDelete: string,
+    setIdDelete: any,
     getAllCompanies: any,
     inputNewCompanyName: any,
     newCompanyName: string
@@ -25,7 +27,7 @@ interface IProps {
 }
 
 function Companies(props: IProps) {
-    const { companies, companyName, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompanies, inputNewCompanyName, newCompanyName } = props;
+    const { companies, companyName, inputCompName, addInputCompany, deleteCompany, setIdDelete, idDelete, setIdEdit, idEdit, getAllCompanies, inputNewCompanyName, newCompanyName } = props;
     const [isOpen, setIsOpen] = useState(false);
     const handleEdit = (id: any) => {
         if (newCompanyName === "") {
@@ -49,8 +51,6 @@ function Companies(props: IProps) {
     const handleCancel = () => {
         setIdEdit('')
     }
-
-
 
     const toggleModal = () => {
         setIsOpen(!isOpen);
@@ -76,13 +76,13 @@ function Companies(props: IProps) {
                         item.id === idEdit ? <tr key={index}>
                             <td><input className="editCompanyInput" value={item.company_name} onChange={(e) => inputNewCompanyName(e, index)}></input></td>
                             <td><button className="updateBtn" onClick={() => handleEdit(idEdit)}>Save</button>
-                                <button className="cancelBtn" onClick={() => handleCancel()}>Cancel</button>
+                                <button className="cancelBtn" onClick={() => {handleCancel()}}>Cancel</button>
                             </td></tr> : <tr key={index}>
                                 <td>{item.company_name}</td>
                                 <td><button className="editBtn" onClick={() => { setIdEdit(item.id) }}>Edit</button>
-                                    <button className="deleteBtn" onClick={toggleModal}>Delete</button>
+                                    <button className="deleteBtn" onClick={() => {toggleModal(); setIdDelete(item.id);}}>Delete</button>
                                     <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
-                                        <div>Are you sure you want to delete this company?</div><br></br>
+                                        <div>Are you sure you want to remove this company?</div><br></br>
                                         <button className="deleteBtn" onClick={() => {toggleModal(); deleteCompany(item.id);}}>Yes</button>
                                         <button className="cancelBtn" onClick={toggleModal}>Cancel</button>
                                     </Modal>

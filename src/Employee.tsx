@@ -1,6 +1,6 @@
 import './App.css';
 import Modal from "react-modal";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 Modal.setAppElement("#root");
 
@@ -33,15 +33,19 @@ interface IProps {
     deleteEmployee: any,
     setIdEmpEdit: any,
     idEmpEdit: string,
+    setIdEmpDelete: any,
+    idEmpDelete: string,
     inputNewEmployeeCompany: any,
     inputNewPosition: any,
     inputNewEmployeeName: any,
-    handleEdit: any
+    handleEdit: any,
 }
 
 function Employee(props: IProps) {
-    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, company_Names, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, choices, deleteEmployee, setIdEmpEdit, idEmpEdit } = props;
+
+    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, company_Names, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, choices, deleteEmployee, setIdEmpEdit, idEmpEdit, setIdEmpDelete,  idEmpDelete} = props;
     const [isOpen, setIsOpen] = useState(false);
+    console.log('%c 🍌 ', 'font-size:20px;background-color: #4b4b4b;color:#fff;', positions);
 
     const handleCancel = () => {
         setIdEmpEdit('')
@@ -51,14 +55,15 @@ function Employee(props: IProps) {
         setIsOpen(!isOpen);
     }
 
+
     return (
         <div className="employee">
-            <form onSubmit={(e) => e.preventDefault()}>
+            {/* <form onSubmit={(e) => e.preventDefault()}> */}
                 <select value={company_Names[0]} onChange={inputCompId}>{company_Names.map((i, index) => options(i, index))}</select>
-                <select value={positions[0].role} onChange={inputEmpPosition}>{positions.map((i, index) => choices(i.role, index))}</select>
+                 { positions.length && <select value={positions[0].role} onChange={inputEmpPosition}>{positions.map((i, index) => {console.log(i.role); choices(i.role, index)})}</select>}
                 <input type="text" name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
                 <button type="submit" disabled={!companyName || !employeeName || !position} onClick={addInputEmployee}>Add</button>
-            </form>
+            {/* </form> */}
             <br /><br />
             <table>
                 <thead>
@@ -82,9 +87,9 @@ function Employee(props: IProps) {
                                 <td>{item.employee_position}</td>
                                 <td>{item.employee_name}</td>
                                 <td><button className="editBtn" onClick={() => setIdEmpEdit(item.id)}>Edit</button>
-                                    <button className="deleteBtn" onClick={toggleModal}>Delete</button></td>
+                                    <button className="deleteBtn" onClick={() => {toggleModal(); setIdEmpDelete(item.id)}}>Delete</button></td>
                                     <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
-                                        <div>Are you sure you want to delete this employee?</div><br></br>
+                                        <div>Are you sure you want to remove this employee?</div><br></br>
                                         <button className="deleteBtn" onClick={() => {toggleModal(); deleteEmployee(item.id);}}>Yes</button>
                                         <button className="cancelBtn" onClick={toggleModal}>Cancel</button>
                                     </Modal>

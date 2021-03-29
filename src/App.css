@@ -37,6 +37,13 @@
   }
 }
 
+/* .landing {
+  text-align: center;
+  justify-content: center;
+  margin-top: 10%;
+  margin-bottom: 10%;
+} */
+
 .activity, .employees, .employee, .company, .login, .register {
   padding: 50px;
   text-align: center;
@@ -107,6 +114,7 @@
 .deleteBtn {
   width: 80px!important;
   background-color: #f56e64!important;
+  margin-right: 10px!important;
 }
 
 .updateBtn {
@@ -181,6 +189,11 @@
   width: 80px;
   height: 45px;
   margin: 2px;
+}
+
+.navBtn {
+  width: 80px!important;
+  margin: 5px;
 }
 
 label {
