@@ -12,8 +12,14 @@ import Register from './Register';
 import Company from './Company';
 import Employee from './Employee';
 import PrivateRoute from './PrivateRoute';
+import image from './images/404.jpg';
 
 interface ICompany {
+  id: string,
+  company_name: string
+}
+
+interface IEditCompany {
   id: string,
   company_name: string
 }
@@ -30,11 +36,17 @@ interface IEmployee {
   employee_position: string
 }
 
+interface IEditEmployee {
+  company_name: string,
+  id: string,
+  employee_name: string,
+  employee_position: string
+}
+
 interface IState {
-  register: boolean,
+  editCompany: IEditCompany,
+  editEmployee: IEditEmployee,
   login: boolean,
-  showEditCompany: boolean,
-  showEditEmployee: boolean,
   regUname: string,
   regPass: string,
   regConfirmPass: string,
@@ -60,16 +72,22 @@ interface IState {
   apiResponse: string,
   idEdit: string,
   idEmpEdit: string,
-  idDelete: string,
   idEmpDelete: string
 }
 
 class App extends react.Component<any, IState> {
   state: IState = {
-    register: false,
+    editCompany: {
+      id: '',
+      company_name: ''
+    },
+    editEmployee: {
+      company_name: '',
+      id: '',
+      employee_name: '',
+      employee_position: ''
+    },
     login: true,
-    showEditCompany: false,
-    showEditEmployee: false,
     regUname: '',
     regPass: '',
     regConfirmPass: '',
@@ -95,12 +113,10 @@ class App extends react.Component<any, IState> {
     apiResponse: '',
     idEdit: '',
     idEmpEdit: '',
-    idDelete: '',
     idEmpDelete: ''
   };
 
-
-  componentDidMount(){
+  componentDidMount() {
     this.getAllCompanies()
     this.getAllEmployees()
     this.getAllUsernames()
@@ -117,26 +133,9 @@ class App extends react.Component<any, IState> {
     }
   }
 
-  triggerEditCompany = () => {
-    this.setState({ showEditCompany: true })
-  }
-
-  triggerEditEmployee = () => {
-    this.setState({ showEditEmployee: true })
-  }
-
-  triggerRegister = () => {
-    this.getAllUsernames()
-    this.setState({ login: false, register: true })
-  }
-
   logout = () => {
-    this.setState({ login: true, register: false })
+    this.setState({ login: true })
     localStorage.removeItem("username");
-  }
-
-  triggerLogin = () => {
-    this.setState({ login: true, register: false })
   }
 
   getAllCompanyNames = () => {
@@ -149,10 +148,6 @@ class App extends react.Component<any, IState> {
 
   options = (i: number, index: number) => {
     return <option key={`${index}-test`}>{i}</option>
-  }
-
-  choices = (id: number, index: number) => {
-    return <option key={`${index}-test`}>{id}</option>
   }
 
   inputCompName = (e: any) => {
@@ -175,16 +170,6 @@ class App extends react.Component<any, IState> {
     this.setState({ regConfirmPass: value })
   }
 
-  // inputUname = (e: any) => {
-  //   const { value } = e.target;
-  //   this.setState({ uname: value })
-  // }
-
-  // inputPass = (e: any) => {
-  //   const { value } = e.target;
-  //   this.setState({ pass: value })
-  // }
-
   inputCompId = (e: any) => {
     const { value } = e.target;
     this.setState({ companyName: value });
@@ -200,45 +185,36 @@ class App extends react.Component<any, IState> {
     this.setState({ position: value });
   }
 
-  inputNewCompanyName = (e: any, index: number) => {
+  inputNewCompanyName = (e: any) => {
     const { value } = e.target;
-    const companies = [...this.state.companies];
-    companies[index] = { ...companies[index], company_name: value };
-    this.setState({ companies, newCompanyName: value });
+    this.setState({ editCompany: { ...this.state.editCompany, company_name: value } });
   }
 
-  inputNewEmployeeCompany = (e: any, index: number) => {
+  inputNewEmployeeCompany = (e: any) => {
     const { value } = e.target;
-    const employees = [...this.state.employees];
-    employees[index] = { ...employees[index], company_name: value };
-    this.setState({ employees, newEmployeeCompany: value });
+    this.setState({ editEmployee: { ...this.state.editEmployee, company_name: value } });
   }
 
-  inputNewPosition = (e: any, index: number) => {
+  inputNewPosition = (e: any) => {
     const { value } = e.target;
-    const employees = [...this.state.employees];
-    employees[index] = { ...employees[index], employee_position: value };
-    this.setState({ employees, newPosition: value });
+    this.setState({ editEmployee: { ...this.state.editEmployee, employee_position: value } });
   }
-
   inputNewEmployeeName = (e: any, index: number) => {
     const { value } = e.target;
-    const employees = [...this.state.employees];
-    employees[index] = { ...employees[index], employee_name: value };
-    this.setState({ employees, newEmployeeName: value });
+    this.setState({ editEmployee: { ...this.state.editEmployee, employee_name: value } });
 
   }
 
   handleEdit = (id: any) => {
-    if (this.state.newEmployeeCompany === "" || this.state.newEmployeeName === "" || this.state.newPosition === "") {
+    if (this.state.editEmployee.company_name === "" || this.state.editEmployee.employee_name === "" || this.state.editEmployee.employee_position === "") {
       alert("All fields are required!");
     } else {
-      axios.put('api/employees' + id, { company_name: this.state.newEmployeeCompany, employee_name: this.state.newEmployeeName, employee_position: this.state.newPosition })
+      axios.put('api/employees/' + id, { company_name: this.state.editEmployee.company_name, employee_name: this.state.editEmployee.employee_name, employee_position: this.state.editEmployee.employee_position })
         .then(res => {
           console.log("SUCCESS", res)
           alert("Updated successfully!");
           this.getAllEmployees()
-          this.setIdEmpEdit('')
+          this.setIdEmpEdit('', '', '', '')
         })
         .catch(err => {
           console.log("ERROR", err)
@@ -256,70 +232,39 @@ class App extends react.Component<any, IState> {
     if (regUname === '' || regPass === '' || regConfirmPass === '') {
       alert("All fields are required!")
     } else {
-      if (regPass !== regConfirmPass) {
-        alert("Passwords did not match!")
+      if (this.state.usernames.includes(regUname)) {
+        alert("Username already exist!")
         this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
+
       } else {
-        console.log(this.state.usernames)
-        if (this.state.usernames.includes(regUname)) {
-          alert("Username already exist!")
-          this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
+        if (regPass !== regConfirmPass) {
+          alert("Passwords did not match!")
+          this.setState({ regPass: '', regConfirmPass: '' })
         } else {
           axios.post('api/user/register', newAccount)
             .then(res => {
-              alert("Sucessfully registered. Sign in now.");
-              this.setState({ regUname: '', regPass: '', regConfirmPass: '', login: true, register: false })
+              alert("Sucessfully registered.");
+              localStorage.setItem("username", regUname);
+              this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
             })
             .catch(err => {
               console.log("acc", newAccount)
               alert("Registration failed.");
-              this.setState({ regUname: '', regPass: '', regConfirmPass: '', register: true })
+              this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
             })
         }
       }
     }
   }
 
-  // login = () => {
-  //   const { uname, pass } = this.state;
-  //   const userAccount = {
-  //     username: uname,
-  //     password: pass
-  //   };
-  //   if (uname === '' || pass === '') {
-  //     alert("All fields are required!")
-  //   } else {
-  //     axios.post('api/user/login', userAccount)
-  //       .then(res => {
-  //         if (res.data.error === false) {
-  //           localStorage.setItem("username", res.data.user[0].username);
-  //           history.push('/')
-  //           this.setState({ login: false, register: false })
-  //         } else {
-  //           console.log("Invalid credentials!")
-  //           this.setState({ uname: '', pass: '', login: true })
-  //         }
-  //       })
-  //       .catch(err => {
-  //         alert("Invalid credentials!");
-  //         console.log(err, "ERROR")
-  //         this.setState({ uname: '', pass: '' })
-  //       })
-  //   }
-  //   this.setState({ uname: '', pass: '' })
-  // }
-
   getAllPositions = async () => {
     try {
       const data = await axios.get('api/positions')
-      console.log(data)
       this.setState({ positions: data.data })
     } catch (error) {
       console.log(error)
     }
   }
-
-
 
   getAllEmployees = async () => {
     try {
@@ -350,10 +295,10 @@ class App extends react.Component<any, IState> {
       alert("Company already exist!");
       this.setState({ companyName: '' })
     } else {
-      if (this.state.companyName === '') {
+      if (!this.state.companyName) {
         alert("Input field cannot be empty!");
       } else {
-        axios.post('api/company', { company_name: this.state.companyName })
+        axios.post('api/company', { company_name: this.state.companyName, status: "Active" })
           .then(res => {
             console.log(res, "Company added successfully!")
             this.getAllCompanies()
@@ -372,7 +317,7 @@ class App extends react.Component<any, IState> {
     if (this.state.companyName === '' || this.state.employeeName === '' || this.state.position === '') {
       alert("All fields are required!")
     } else {
-      axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position })
+      axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
         .then(res => {
           console.log("Employee added successfully!", res)
           this.getAllEmployees()
@@ -392,7 +337,9 @@ class App extends react.Component<any, IState> {
         this.getAllCompanies()
         const compIdsCopy = this.state.company_Ids.filter((item) => item !== id);
         this.setState({ company_Ids: compIdsCopy })
-        alert("Successfully deleted!");
+      })
+      .then(err => {
+        console.log(err)
       })
   }
 
@@ -401,24 +348,18 @@ class App extends react.Component<any, IState> {
       .then(res => {
         console.log(res, "Deleted")
         this.getAllEmployees()
-        alert("Successfully deleted!");
+      })
+      .then(err => {
+        console.log(err)
       })
   }
 
-  setIdEdit = (id: any) => {
-    this.setState({ idEdit: id })
+  setIdEdit = (id: any, company_name: string) => {
+    this.setState({ idEdit: id, editCompany: { id, company_name } })
   }
 
-  setIdDelete = (id: any) => {
-    this.setState({ idDelete: id })
-  }
-
-  setIdEmpEdit = (id: any) => {
-    this.setState({ idEmpEdit: id })
-  }
-
-  setIdEmpDelete = (id: any) => {
-    this.setState({ idEmpDelete: id })
+  setIdEmpEdit = (id: any, company_name: string, employee_name: string, employee_position: string) => {
+    this.setState({ idEmpEdit: id, editEmployee: { company_name, id, employee_name, employee_position } })
   }
 
   render() {
@@ -427,23 +368,25 @@ class App extends react.Component<any, IState> {
         <div>
           <Switch>
             <Route exact path="/login">
-              <Login signUp={this.triggerRegister}></Login>
+              <Link to="/register"><button className="routeBtn">Register</button></Link>
+              <Login />
             </Route>
             <Route exact path="/register">
-              <Register signIn={this.triggerLogin} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register}></Register>
+              <Link to="/login"><button className="routeBtn">Login</button></Link>
+              <Register regUname={this.state.regUname} regPass={this.state.regPass} regConfirmPass={this.state.regConfirmPass} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register}></Register>
             </Route>
+
             <PrivateRoute exact path="/">
               <div className="activity">
                 <button className="signOutBtn" onClick={this.logout}>Sign Out</button><br /><br />
                 <h1 className="header">Companies</h1>
                 <Company
+                  editCompany={this.state.editCompany}
                   newCompanyName={this.state.newCompanyName}
                   inputNewCompanyName={this.inputNewCompanyName}
                   getAllCompanies={this.getAllCompanies}
                   setIdEdit={this.setIdEdit}
                   idEdit={this.state.idEdit}
-                  setIdDelete={this.setIdDelete}
-                  idDelete={this.state.idDelete}
                   companies={this.state.companies}
                   companyName={this.state.companyName}
                   deleteCompany={this.deleteCompany}
@@ -453,6 +396,7 @@ class App extends react.Component<any, IState> {
               <div className="employees">
                 <h1 className="header">Employees</h1>
                 <Employee
+                  editEmployee={this.state.editEmployee}
                   handleEdit={this.handleEdit}
                   inputNewEmployeeName={this.inputNewEmployeeName}
                   inputNewPosition={this.inputNewPosition}
@@ -460,8 +404,6 @@ class App extends react.Component<any, IState> {
                   positions={this.state.positions}
                   setIdEmpEdit={this.setIdEmpEdit}
                   idEmpEdit={this.state.idEmpEdit}
-                  setIdEmpDelete={this.setIdEmpDelete}
-                  idEmpDelete={this.state.idEmpDelete}
                   company_Names={this.state.company_Names}
                   company_Ids={this.state.company_Ids}
                   employees={this.state.employees}
@@ -473,140 +415,20 @@ class App extends react.Component<any, IState> {
                   inputEmpName={this.inputEmpName}
                   inputEmpPosition={this.inputEmpPosition}
                   addInputEmployee={this.addInputEmployee}
-                  options={this.options}
-                  choices={this.choices} />
+                  options={this.options} />
               </div>
             </PrivateRoute>
+
+            <Route path="*">
+              <div>
+                <img alt="404 no found" src={image}></img>
+              </div>
+            </Route>
           </Switch>
         </div>
       </Router>
     )
-    // if (localStorage.getItem("username") === null) {
-    //   return (
-    //     <Router>
-    //       <div className="landing">
-    //         <Link to="/login"><button className="navBtn">Login</button></Link>
-    //         <Link to="/register" className="navBtn"><button >Register</button></Link>
-    //         <Switch>
-    //           <Route path="/login">
-    //             <Login signUp={this.triggerRegister} inputUname={this.inputUname} inputPass={this.inputPass} login={this.login}></Login>
-    //           </Route>
-    //           <Route path="/register">
-    //             <Register signIn={this.triggerLogin} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register}></Register>
-    //           </Route>
-    //         </Switch>
-    //       </div>
-    //     </Router>
-    //   )
-    // } else if (localStorage.getItem("username") != null) {
-    //   return (
-    //     <Router>
-    //       <div>
-    //         <div className="activity">
-    //           <button className="signOutBtn" onClick={this.logout}>Sign Out</button><br /><br />
-    //           <h1 className="header">Companies</h1>
-    //           <Company
-    //             newCompanyName={this.state.newCompanyName}
-    //             inputNewCompanyName={this.inputNewCompanyName}
-    //             getAllCompanies={this.getAllCompanies}
-    //             setIdEdit={this.setIdEdit}
-    //             idEdit={this.state.idEdit}
-    //             setIdDelete={this.setIdDelete}
-    //             idDelete={this.state.idDelete}
-    //             companies={this.state.companies}
-    //             companyName={this.state.companyName}
-    //             deleteCompany={this.deleteCompany}
-    //             inputCompName={this.inputCompName}
-    //             addInputCompany={this.addInputCompany} />
-    //         </div>
-    //         <div className="employees">
-    //           <h1 className="header">Employees</h1>
-    //           <Employee
-    //             handleEdit={this.handleEdit}
-    //             inputNewEmployeeName={this.inputNewEmployeeName}
-    //             inputNewPosition={this.inputNewPosition}
-    //             inputNewEmployeeCompany={this.inputNewEmployeeCompany}
-    //             positions={this.state.positions}
-    //             setIdEmpEdit={this.setIdEmpEdit}
-    //             idEmpEdit={this.state.idEmpEdit}
-    //             setIdEmpDelete={this.setIdEmpDelete}
-    //             idEmpDelete={this.state.idEmpDelete}
-    //             company_Names={this.state.company_Names}
-    //             company_Ids={this.state.company_Ids}
-    //             employees={this.state.employees}
-    //             companyName={this.state.companyName}
-    //             employeeName={this.state.employeeName}
-    //             position={this.state.position}
-    //             deleteEmployee={this.deleteEmployee}
-    //             inputCompId={this.inputCompId}
-    //             inputEmpName={this.inputEmpName}
-    //             inputEmpPosition={this.inputEmpPosition}
-    //             addInputEmployee={this.addInputEmployee}
-    //             options={this.options}
-    //             choices={this.choices} />
-    //         </div>
-    //       </div>
-    //     </Router >
-    //   )
   }
-  // // const { login, register, regUname, regPass, regConfirmPass } = this.state;
-  // console.log("KEY", localStorage.getItem("username"))
-  // if (localStorage.getItem("username") != null) {
-  //   return (
-  // <div className="">
-  //   <div className="activity">
-  //     <button className="signOutBtn" onClick={this.logout}>Sign Out</button><br /><br />
-  //     <h1 className="header">Companies</h1>
-  //     <Company
-  //       newCompanyName={this.state.newCompanyName}
-  //       inputNewCompanyName={this.inputNewCompanyName}
-  //       getAllCompanies={this.getAllCompanies}
-  //       setIdEdit={this.setIdEdit}
-  //       idEdit={this.state.idEdit}
-  //       setIdDelete={this.setIdDelete}
-  //       idDelete={this.state.idDelete}
-  //       companies={this.state.companies}
-  //       companyName={this.state.companyName}
-  //       deleteCompany={this.deleteCompany}
-  //       inputCompName={this.inputCompName}
-  //       addInputCompany={this.addInputCompany} />
-  //   </div>
-  //   <div className="employees">
-  //     <h1 className="header">Employees</h1>
-  //     <Employee
-  //       handleEdit={this.handleEdit}
-  //       inputNewEmployeeName={this.inputNewEmployeeName}
-  //       inputNewPosition={this.inputNewPosition}
-  //       inputNewEmployeeCompany={this.inputNewEmployeeCompany}
-  //       positions={this.state.positions}
-  //       setIdEmpEdit={this.setIdEmpEdit}
-  //       idEmpEdit={this.state.idEmpEdit}
-  //       setIdEmpDelete={this.setIdEmpDelete}
-  //       idEmpDelete={this.state.idEmpDelete}
-  //       company_Names={this.state.company_Names}
-  //       company_Ids={this.state.company_Ids}
-  //       employees={this.state.employees}
-  //       companyName={this.state.companyName}
-  //       employeeName={this.state.employeeName}
-  //       position={this.state.position}
-  //       deleteEmployee={this.deleteEmployee}
-  //       inputCompId={this.inputCompId}
-  //       inputEmpName={this.inputEmpName}
-  //       inputEmpPosition={this.inputEmpPosition}
-  //       addInputEmployee={this.addInputEmployee}
-  //       options={this.options}
-  //       choices={this.choices} />
-  //   </div>
-  // //     </div>
-  //   )
-  // } else if (localStorage.getItem("username") === null){
-  //   return (
-  //     <div>
-  //       {this.state.login && <Login signUp={this.triggerRegister} inputUname={this.inputUname} inputPass={this.inputPass} login={this.login}></Login>}
-  //       {this.state.register && <Register signIn={this.triggerLogin} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register}></Register>}
-  //     </div>
-  //   )
-  // }
 }
 
 export default App;

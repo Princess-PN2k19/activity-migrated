@@ -1,14 +1,9 @@
 import './App.css';
 import axios from "axios";
-import { useHistory } from "react-router-dom";
+import { useHistory, Redirect } from "react-router-dom";
 import { useState } from 'react';
 
-interface IProps {
-    signUp: any,
-}
-
-function Login(props: IProps) {
-    const { signUp } = props;
+function Login() {
     const [uname, setUname] = useState("")
     const [pass, setPass] = useState("")
     const handleUname = (e: any) => {
@@ -25,7 +20,6 @@ function Login(props: IProps) {
             username: uname,
             password: pass
         };
-        console.log("UNAME", uname);
         if (uname === '' || pass === '') {
             alert("All fields are required!")
         } else {
@@ -36,34 +30,39 @@ function Login(props: IProps) {
                         history.push('/')
                     } else {
                         console.log("Invalid credentials!")
-                        handleUname('')
-                        handlePass('')
+                        setUname('')
+                        setPass('')
                     }
                 })
                 .catch(err => {
-                    alert("Invalid credentials!");
                     console.log(err, "ERROR")
-                    handleUname('')
-                    handlePass('')
+                    alert("Invalid credentials!");
+                    setUname('')
+                    setPass('')
                 })
         }
     }
 
-    return (
-        <div className="login">
-            <div className="container">
-                <form onSubmit={(e) => e.preventDefault()}>
-                    <h1>Sign In</h1><br /><br />
+    const auth = localStorage.getItem('username')
+
+    if (auth) {
+        return (
+            < Redirect to={{ pathname: "/" }}></  Redirect>
+        )
+    } else {
+        return (
+            <div className="login">
+                <div className="container">
+                    <h1>Login</h1><br /><br />
                     <label>Username*:</label><br /><br />
-                    <input name="username" type="text" onChange={handleUname} placeholder="Enter your username" required></input><br /><br /><br />
+                    <input name="username" type="text" value={uname} onChange={handleUname} placeholder="Enter your username" required></input><br /><br /><br />
                     <label>Password*:</label><br /><br />
-                    <input name="password" type="password" onChange={handlePass} placeholder="Enter your password" required></input><br /><br /><br />
-                    <button className="loginBtn" onClick={LoginFunction}>Sign In</button><br /><br /><br />
-                    <button className="toRegBtn" onClick={signUp}>Don't have an account yet? Sign Up</button>
-                </form>
+                    <input name="password" type="password" value={pass} onChange={handlePass} placeholder="Enter your password" required></input><br /><br /><br />
+                    <button className="loginBtn" onClick={LoginFunction}>Login</button><br /><br /><br />
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
 
 export default Login;

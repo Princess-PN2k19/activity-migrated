@@ -1,32 +1,41 @@
 import './App.css';
+import { Redirect } from "react-router-dom";
 
 interface IProps {
-    signIn: any,
     inputRegUname: any,
     inputRegPass: any,
     inputRegConfirmPass: any,
-    register: any
+    register: any,
+    regUname: string,
+    regPass: string,
+    regConfirmPass: string
 }
 
+
 function Register(props: IProps) {
-    const { signIn, inputRegUname, inputRegPass, inputRegConfirmPass, register } = props;
-    return (
-        <div className="register">
-            <div className="container">
-                <form onSubmit={(e) => e.preventDefault()}>
-                    <h1>Sign Up</h1><br /><br />
+    const { inputRegUname, inputRegPass, inputRegConfirmPass, register, regUname, regPass, regConfirmPass } = props;
+
+    const auth = localStorage.getItem('username')
+    if (auth) {
+        return (
+            < Redirect to={{ pathname: "/" }}></  Redirect>
+        )
+    } else {
+        return (
+            <div className="register">
+                <div className="regContainer">
+                    <h1>Register</h1><br /><br />
                     <label>Username*:</label><br /><br />
-                    <input name="username" type="text" onChange={inputRegUname} placeholder="Enter your username" required></input><br /><br /><br />
+                    <input name="username" type="text" value={regUname} onChange={inputRegUname} placeholder="Enter your username" required></input><br /><br /><br />
                     <label>Password*:</label><br /><br />
-                    <input name="password" type="password" onChange={inputRegPass} placeholder="Enter your password" required></input><br /><br /><br />
+                    <input name="password" type="password" value={regPass} onChange={inputRegPass} placeholder="Enter your password" required></input><br /><br /><br />
                     <label>Confirm Password*:</label><br /><br />
-                    <input name="password" type="password" onChange={inputRegConfirmPass} placeholder="Confirm your password" required></input><br /><br /><br />
-                    <button className="regBtn" onClick={register}>Sign Up</button><br /><br /><br />
-                    <button className="toLoginBtn" onClick={signIn}>Already have an account? Sign In</button>
-                </form>
+                    <input name="password" type="password" value={regConfirmPass} onChange={inputRegConfirmPass} placeholder="Confirm your password" required></input><br /><br /><br />
+                    <button className="regBtn" onClick={register}>Register</button><br /><br /><br />
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
 
 export default Register;

@@ -18,6 +18,7 @@ function PrivateRoute (props: IProps) {
             return (<Redirect to={{pathname: "login"}}/>)
         }
     }
+
     return (
         <Route {...rest} render={routeComponent}/>
     )
