@@ -44,6 +44,7 @@ interface IEditEmployee {
 }
 
 interface IState {
+  companyAdd: string,
   editCompany: IEditCompany,
   editEmployee: IEditEmployee,
   login: boolean,
@@ -77,6 +78,7 @@ interface IState {
 
 class App extends react.Component<any, IState> {
   state: IState = {
+    companyAdd: '',
     editCompany: {
       id: '',
       company_name: ''
@@ -143,7 +145,7 @@ class App extends react.Component<any, IState> {
     this.state.companies.forEach(item => {
       names.push(item.company_name)
     })
-    this.setState({ company_Names: names })
+    this.setState({ company_Names: names, companyName: this.state.companies[0].company_name})
   }
 
   options = (i: number, index: number) => {
@@ -152,7 +154,7 @@ class App extends react.Component<any, IState> {
 
   inputCompName = (e: any) => {
     const { value } = e.target;
-    this.setState({ companyName: value });
+    this.setState({ companyAdd: value });
   }
 
   inputRegUname = (e: any) => {
@@ -235,7 +237,6 @@ class App extends react.Component<any, IState> {
       if (this.state.usernames.includes(regUname)) {
         alert("Username already exist!")
         this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
-
       } else {
         if (regPass !== regConfirmPass) {
           alert("Passwords did not match!")
@@ -260,7 +261,7 @@ class App extends react.Component<any, IState> {
   getAllPositions = async () => {
     try {
       const data = await axios.get('api/positions')
-      this.setState({ positions: data.data })
+      this.setState({ positions: data.data, position: data.data[0].role })
     } catch (error) {
       console.log(error)
     }
@@ -291,37 +292,37 @@ class App extends react.Component<any, IState> {
 
   addInputCompany = () => {
     const company_names = this.state.companies.map((item) => item.company_name)
-    if (company_names.includes(this.state.companyName)) {
+    if (company_names.includes(this.state.companyAdd)) {
       alert("Company already exist!");
-      this.setState({ companyName: '' })
+      this.setState({ companyAdd: '' })
     } else {
-      if (!this.state.companyName) {
+      if (!this.state.companyAdd) {
         alert("Input field cannot be empty!");
       } else {
-        axios.post('api/company', { company_name: this.state.companyName, status: "Active" })
+        axios.post('api/company', { company_name: this.state.companyAdd, status: "Active" })
           .then(res => {
             console.log(res, "Company added successfully!")
             this.getAllCompanies()
             this.getAllCompanyNames()
-            this.setState({ companyName: '' })
+            this.setState({ companyAdd: '' })
           })
           .catch(err => {
             console.log(err, "Failed.")
-            this.setState({ companyName: '' })
+            this.setState({ companyAdd: '' })
           })
       }
     }
   }
 
   addInputEmployee = () => {
-    if (this.state.companyName === '' || this.state.employeeName === '' || this.state.position === '') {
+    if (this.state.employeeName === '') {
       alert("All fields are required!")
     } else {
       axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
         .then(res => {
           console.log("Employee added successfully!", res)
           this.getAllEmployees()
-          this.setState({ companyName: '', employeeName: '', position: '' })
+          this.setState({ employeeName: ''})
         })
         .catch(err => {
           console.log(err, "Employee was not added.")
@@ -388,7 +389,7 @@ class App extends react.Component<any, IState> {
                   setIdEdit={this.setIdEdit}
                   idEdit={this.state.idEdit}
                   companies={this.state.companies}
-                  companyName={this.state.companyName}
+                  companyAdd={this.state.companyAdd}
                   deleteCompany={this.deleteCompany}
                   inputCompName={this.inputCompName}
                   addInputCompany={this.addInputCompany} />

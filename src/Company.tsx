@@ -18,7 +18,7 @@ interface IEditCompany {
 interface IProps {
     companies: ICompany[],
     editCompany: IEditCompany,
-    companyName: string,
+    companyAdd: string,
     inputCompName: any,
     addInputCompany: any,
     deleteCompany: any,
@@ -30,7 +30,7 @@ interface IProps {
 }
 
 function Companies(props: IProps) {
-    const { companies, editCompany, companyName, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompanies, inputNewCompanyName } = props;
+    const { companies, editCompany, companyAdd, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompanies, inputNewCompanyName } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState('');
     const handleEdit = (id: any) => {
@@ -66,9 +66,9 @@ function Companies(props: IProps) {
 
     return (
         <div className="company">
-            <input name="companyName" value={companyName} type="text" onChange={inputCompName} placeholder="Enter a company" required>
+            <input name="companyName" value={companyAdd} type="text" onChange={inputCompName} placeholder="Enter a company" required>
             </input>
-            <button type="submit" disabled={!companyName} onClick={addInputCompany} >Add</button>
+            <button type="submit" onClick={addInputCompany} >Add</button>
             <br /><br />
             <table>
                 <thead>

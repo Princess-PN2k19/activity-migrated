@@ -68,7 +68,7 @@ function Employee(props: IProps) {
             <select value={companyName} onChange={inputCompId}>{company_Names.map((i, index) => options(i, index))}</select>
             { positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) =>  options(i.role, index) )}</select>}
             <input type="text" value={employeeName} name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
-            <button type="submit" disabled={!companyName || !employeeName || !position} onClick={addInputEmployee}>Add</button>
+            <button type="submit" onClick={addInputEmployee}>Add</button>
             <br /><br />
             <table>
                 <thead>
