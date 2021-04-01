@@ -67,6 +67,12 @@ function Employee(props: IProps) {
         setIdDelete(id)
     }
 
+    const companyNameById = (id: string) => {
+        const item = companies.find((item) => item.id === id && item)
+        return item?.company_name
+    }
+
+
 
     return (
         <div className="employee">
@@ -88,9 +94,21 @@ function Employee(props: IProps) {
                 <tbody>
                     {employees.map((item, index) => (
                         item.id === idEmpEdit ? <tr key={index}>
-                            <td><select className="editEmployeeCompany" value={editEmployee.company_name} onChange={(e) => inputNewEmployeeCompany(e)}>{companies.map((i, index) => options(i.company_name, index))}</select></td>
-                            <td><select className="editEmployeePosition" value={editEmployee.employee_position} onChange={(e) => inputNewPosition(e)}>{positions.map((i, index) => options(i.role, index))}</select></td>
-                            <td><input onChange={(e) => inputNewEmployeeName(e)} value={editEmployee.employee_name} type="text" className="editEmployeeName" placeholder="New employee name" /></td>
+                            <td>
+                                <select className="editEmployeeCompany" value={companyNameById(editEmployee.company_name)} onChange={(e) => inputNewEmployeeCompany(e)}>
+                                {
+                                    companies.map((i, index) => options(i.company_name, index))
+                                }</select>
+                            </td>
+                            <td><select className="editEmployeePosition" value={editEmployee.employee_position} onChange={(e) => inputNewPosition(e)}>
+                                {
+                                    positions.map((i, index) => options(i.role, index))
+                                }
+                                </select>
+                            </td>
+                            <td>
+                                <input onChange={(e) => inputNewEmployeeName(e)} value={editEmployee.employee_name} type="text" className="editEmployeeName" placeholder="New employee name" />
+                            </td>
                             <td><button onClick={() => handleEdit(idEmpEdit, editEmployee.company_name)} type="submit" className="updateBtn">Save</button>
                                 <button onClick={() => handleCancel()} type="submit" className="cancelBtn">Cancel</button>
                             </td></tr> : <tr key={index}>
