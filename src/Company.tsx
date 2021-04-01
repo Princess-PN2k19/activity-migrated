@@ -4,7 +4,6 @@ import Modal from "react-modal";
 import React, { useState } from "react";
 Modal.setAppElement("#root");
 
-
 interface ICompany {
     id: string,
     company_name: string
@@ -66,6 +65,7 @@ function Companies(props: IProps) {
 
     return (
         <div className="company">
+            <label className="labelCompany">Company*:</label><br/><br/>
             <input name="companyName" value={companyAdd} type="text" onChange={inputCompName} placeholder="Enter a company" required>
             </input>
             <button type="submit" onClick={addInputCompany} >Add</button>

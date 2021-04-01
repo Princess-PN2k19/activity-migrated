@@ -129,7 +129,6 @@ class App extends react.Component<any, IState> {
     try {
       const data = await axios.get('api/companies')
       this.setState({ companies: data.data })
-      this.getAllCompanyNames()
     } catch (error) {
       console.log(error)
     }
@@ -138,14 +137,6 @@ class App extends react.Component<any, IState> {
   logout = () => {
     this.setState({ login: true })
     localStorage.removeItem("username");
-  }
-
-  getAllCompanyNames = () => {
-    let names: string[] = []
-    this.state.companies.forEach(item => {
-      names.push(item.company_name)
-    })
-    this.setState({ company_Names: names, companyName: this.state.companies[0].company_name})
   }
 
   options = (i: number, index: number) => {
@@ -207,24 +198,6 @@ class App extends react.Component<any, IState> {
 
   }
 
-  handleEdit = (id: any) => {
-    if (this.state.editEmployee.company_name === "" || this.state.editEmployee.employee_name === "" || this.state.editEmployee.employee_position === "") {
-      alert("All fields are required!");
-    } else {
-      axios.put('api/employees/' + id, { company_name: this.state.editEmployee.company_name, employee_name: this.state.editEmployee.employee_name, employee_position: this.state.editEmployee.employee_position })
-        .then(res => {
-          console.log("SUCCESS", res)
-          alert("Updated successfully!");
-          this.getAllEmployees()
-          this.setIdEmpEdit('', '', '', '')
-        })
-        .catch(err => {
-          console.log("ERROR", err)
-          alert("Error.")
-        })
-    }
-  }
-
   register = () => {
     const { regUname, regPass, regConfirmPass } = this.state;
     const newAccount = {
@@ -270,7 +243,7 @@ class App extends react.Component<any, IState> {
   getAllEmployees = async () => {
     try {
       const data = await axios.get('api/employees')
-      this.setState({ employees: data.data })
+      this.setState({ employees: data.data, companyName: this.state.companies[0].company_name })
     } catch (error) {
       console.log(error)
     }
@@ -303,7 +276,6 @@ class App extends react.Component<any, IState> {
           .then(res => {
             console.log(res, "Company added successfully!")
             this.getAllCompanies()
-            this.getAllCompanyNames()
             this.setState({ companyAdd: '' })
           })
           .catch(err => {
@@ -315,18 +287,45 @@ class App extends react.Component<any, IState> {
   }
 
   addInputEmployee = () => {
+    const company_names = this.state.employees.map((item) => item.company_name)
+    const employee_positions = this.state.employees.map((item) => item.employee_position)
+    const employee_names = this.state.employees.map((item) => item.employee_name)
+    const company_Id = this.state.companies.find(company => company.company_name === this.state.companyName)
     if (this.state.employeeName === '') {
       alert("All fields are required!")
     } else {
-      axios.post('api/employee', { company_name: this.state.companyName, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
+      if (company_names.includes(this.state.companyName) && employee_positions.includes(this.state.position) && employee_names.includes(this.state.employeeName)) {
+        alert("Employee already exist!")
+      } else {
+        axios.post('api/employee', { company_name: company_Id?.id, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
+          .then(res => {
+            console.log("Employee added successfully!", res)
+            this.getAllEmployees()
+            this.setState({ employeeName: '' })
+          })
+          .catch(err => {
+            console.log(err, "Employee was not added.")
+            this.setState({ companyName: '', employeeName: '', position: '' })
+          })
+      }
+    }
+  }
+
+  handleEdit = (id: any, company: string) => {
+    const company_name  = this.state.companies.find(i => i.company_name === company)?.id
+    if (this.state.editEmployee.company_name === "" || this.state.editEmployee.employee_name === "" || this.state.editEmployee.employee_position === "") {
+      alert("All fields are required!");
+    } else {
+      axios.put('api/employees/' + id, { company_name: company_name, employee_name: this.state.editEmployee.employee_name, employee_position: this.state.editEmployee.employee_position })
         .then(res => {
-          console.log("Employee added successfully!", res)
+          console.log("SUCCESS", res)
+          alert("Updated successfully!");
           this.getAllEmployees()
-          this.setState({ employeeName: ''})
+          this.setIdEmpEdit('', '', '', '')
         })
         .catch(err => {
-          console.log(err, "Employee was not added.")
-          this.setState({ companyName: '', employeeName: '', position: '' })
+          console.log("ERROR", err)
+          alert("Error.")
         })
     }
   }
@@ -339,7 +338,7 @@ class App extends react.Component<any, IState> {
         const compIdsCopy = this.state.company_Ids.filter((item) => item !== id);
         this.setState({ company_Ids: compIdsCopy })
       })
-      .then(err => {
+      .catch(err => {
         console.log(err)
       })
   }
@@ -350,7 +349,7 @@ class App extends react.Component<any, IState> {
         console.log(res, "Deleted")
         this.getAllEmployees()
       })
-      .then(err => {
+      .catch(err => {
         console.log(err)
       })
   }
@@ -397,6 +396,7 @@ class App extends react.Component<any, IState> {
               <div className="employees">
                 <h1 className="header">Employees</h1>
                 <Employee
+                  companies={this.state.companies}
                   editEmployee={this.state.editEmployee}
                   handleEdit={this.handleEdit}
                   inputNewEmployeeName={this.inputNewEmployeeName}
@@ -405,7 +405,6 @@ class App extends react.Component<any, IState> {
                   positions={this.state.positions}
                   setIdEmpEdit={this.setIdEmpEdit}
                   idEmpEdit={this.state.idEmpEdit}
-                  company_Names={this.state.company_Names}
                   company_Ids={this.state.company_Ids}
                   employees={this.state.employees}
                   companyName={this.state.companyName}

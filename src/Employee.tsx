@@ -23,12 +23,17 @@ interface IPosition {
     role: string
 }
 
+interface ICompany {
+    id: string,
+    company_name: string
+  }
+
 interface IProps {
     editEmployee: IEditEmployee,
     positions: IPosition[],
-    company_Names: string[],
     company_Ids: string[],
     employees: IEmployee[],
+    companies: ICompany[],
     companyName: string,
     employeeName: string,
     position: string,
@@ -47,7 +52,7 @@ interface IProps {
 }
 
 function Employee(props: IProps) {
-    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, company_Names, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, deleteEmployee, setIdEmpEdit, idEmpEdit, editEmployee} = props;
+    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, deleteEmployee, setIdEmpEdit, idEmpEdit, editEmployee, companies} = props;
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState('');
     const handleCancel = () => {
@@ -65,8 +70,9 @@ function Employee(props: IProps) {
 
     return (
         <div className="employee">
-            <select value={companyName} onChange={inputCompId}>{company_Names.map((i, index) => options(i, index))}</select>
-            { positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) =>  options(i.role, index) )}</select>}
+            <label className="labelEmployee">Company*:</label><label className="labelEmployee">Position*:</label><label className="labelEmployee">Employee Name*:</label><br/><br/>
+            <select value={companyName} onChange={inputCompId}>{companies.map((i, index) => options(i.company_name, index))}</select>           
+            { positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) =>  options(i.role, index) )}</select>}    
             <input type="text" value={employeeName} name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
             <button type="submit" onClick={addInputEmployee}>Add</button>
             <br /><br />
@@ -82,13 +88,13 @@ function Employee(props: IProps) {
                 <tbody>
                     {employees.map((item, index) => (
                         item.id === idEmpEdit ? <tr key={index}>
-                            <td><select className="editEmployeeCompany" value={editEmployee.company_name} onChange={(e) => inputNewEmployeeCompany(e)}>{company_Names.map((i, index) => options(i, index))}</select></td>
+                            <td><select className="editEmployeeCompany" value={editEmployee.company_name} onChange={(e) => inputNewEmployeeCompany(e)}>{companies.map((i, index) => options(i.company_name, index))}</select></td>
                             <td><select className="editEmployeePosition" value={editEmployee.employee_position} onChange={(e) => inputNewPosition(e)}>{positions.map((i, index) => options(i.role, index))}</select></td>
                             <td><input onChange={(e) => inputNewEmployeeName(e)} value={editEmployee.employee_name} type="text" className="editEmployeeName" placeholder="New employee name" /></td>
-                            <td><button onClick={() => handleEdit(idEmpEdit)} type="submit" className="updateBtn">Save</button>
+                            <td><button onClick={() => handleEdit(idEmpEdit, editEmployee.company_name)} type="submit" className="updateBtn">Save</button>
                                 <button onClick={() => handleCancel()} type="submit" className="cancelBtn">Cancel</button>
                             </td></tr> : <tr key={index}>
-                                <td>{item.company_name}</td>
+                                <td>{companies.find(company => company.id === item.company_name)?.company_name}</td>
                                 <td>{item.employee_position}</td>
                                 <td>{item.employee_name}</td>
                                 <td><button className="editBtn" onClick={() => setIdEmpEdit(item.id, item.company_name, item.employee_name, item.employee_position)}>Edit</button>

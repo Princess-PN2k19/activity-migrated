@@ -54,9 +54,9 @@ function Login() {
             <div className="login">
                 <div className="container">
                     <h1>Login</h1><br /><br />
-                    <label>Username*:</label><br /><br />
+                    <label className="labelForm">Username*:</label><br /><br />
                     <input name="username" type="text" value={uname} onChange={handleUname} placeholder="Enter your username" required></input><br /><br /><br />
-                    <label>Password*:</label><br /><br />
+                    <label className="labelForm">Password*:</label><br /><br />
                     <input name="password" type="password" value={pass} onChange={handlePass} placeholder="Enter your password" required></input><br /><br /><br />
                     <button className="loginBtn" onClick={LoginFunction}>Login</button><br /><br /><br />
                 </div>

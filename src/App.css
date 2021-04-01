@@ -53,6 +53,7 @@ img {
 .container {
   padding-top: 120px;
   padding-bottom: 120px;
+  border-radius: 8px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -65,6 +66,7 @@ img {
 .regContainer {
   padding-top: 90px;
   padding-bottom: 90px;
+  border-radius: 8px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -241,13 +243,23 @@ img {
   margin: 5px;
 }
 
-label {
+.labelForm {
   float: left;
   margin-left: 20px;
 }
+
+.labelCompany{
+  margin-right: 20px;
+}
+
+.labelEmployee{
+  margin-right: 130px;
+}
+
 .container button:hover {
   background-color: #c2b2b2;
   color: white;
+
 }
 
 .container button {
