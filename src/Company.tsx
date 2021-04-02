@@ -12,7 +12,7 @@ interface ICompany {
 interface IEditCompany {
     id: string,
     company_name: string
-  }
+}
 
 interface IProps {
     companies: ICompany[],
@@ -38,15 +38,16 @@ function Companies(props: IProps) {
         } else {
             axios.put('api/companies/' + id, { company_name: editCompany.company_name })
                 .then(res => {
+                    getAllCompanies()
                     console.log("SUCCESS", res)
                     alert("Updated successfully!");
-                    getAllCompanies()
                     setIdEdit('', '')
 
                 })
                 .catch(err => {
-                    console.log("ERROR", err)
-                    alert("Error.")
+                    alert("Company already exist!");
+                    getAllCompanies()
+                    setIdEdit('', '')
                 })
         }
     }
@@ -65,7 +66,7 @@ function Companies(props: IProps) {
 
     return (
         <div className="company">
-            <label className="labelCompany">Company*:</label><br/><br/>
+            <label className="labelCompany">Company*:</label><br /><br />
             <input name="companyName" value={companyAdd} type="text" onChange={inputCompName} placeholder="Enter a company" required>
             </input>
             <button type="submit" onClick={addInputCompany} >Add</button>
@@ -85,7 +86,7 @@ function Companies(props: IProps) {
                                 <button className="cancelBtn" onClick={() => { handleCancel() }}>Cancel</button>
                             </td></tr> : <tr key={index}>
                                 <td>{item.company_name}</td>
-                                <td><button className="editBtn" onClick={() => setIdEdit(item.id, item.company_name) }>Edit</button>
+                                <td><button className="editBtn" onClick={() => setIdEdit(item.id, item.company_name)}>Edit</button>
                                     <button className="deleteBtn" onClick={() => { toggleModal(); handleDelete(item.id); }}>Delete</button>
                                     <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
                                         <div>Are you sure you want to remove this company?</div><br></br>

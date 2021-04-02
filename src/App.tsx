@@ -264,55 +264,45 @@ class App extends react.Component<any, IState> {
   }
 
   addInputCompany = () => {
-    const company_names = this.state.companies.map((item) => item.company_name)
-    if (company_names.includes(this.state.companyAdd)) {
-      alert("Company already exist!");
-      this.setState({ companyAdd: '' })
+    if (!this.state.companyAdd) {
+      alert("Input field cannot be empty!");
     } else {
-      if (!this.state.companyAdd) {
-        alert("Input field cannot be empty!");
-      } else {
-        axios.post('api/company', { company_name: this.state.companyAdd, status: "Active" })
-          .then(res => {
-            console.log(res, "Company added successfully!")
-            this.getAllCompanies()
-            this.setState({ companyAdd: '' })
-          })
-          .catch(err => {
-            console.log(err, "Failed.")
-            this.setState({ companyAdd: '' })
-          })
-      }
+      axios.post('api/company', { company_name: this.state.companyAdd, status: "Active" })
+        .then(res => {
+          console.log(res, "Company added successfully!")
+          this.getAllCompanies()
+          this.setState({ companyAdd: '' })
+        })
+        .catch(err => {
+          alert("Company already exist!");
+          this.getAllCompanies()
+          this.setState({ companyAdd: '' })
+        })
     }
   }
 
   addInputEmployee = () => {
-    const company_names = this.state.employees.map((item) => item.company_name)
-    const employee_positions = this.state.employees.map((item) => item.employee_position)
-    const employee_names = this.state.employees.map((item) => item.employee_name)
     const company_Id = this.state.companies.find(company => company.company_name === this.state.companyName)
     if (this.state.employeeName === '') {
       alert("All fields are required!")
     } else {
-      if (company_names.includes(this.state.companyName) && employee_positions.includes(this.state.position) && employee_names.includes(this.state.employeeName)) {
-        alert("Employee already exist!")
-      } else {
-        axios.post('api/employee', { company_name: company_Id?.id, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
-          .then(res => {
-            console.log("Employee added successfully!", res)
-            this.getAllEmployees()
-            this.setState({ employeeName: '' })
-          })
-          .catch(err => {
-            console.log(err, "Employee was not added.")
-            this.setState({ companyName: '', employeeName: '', position: '' })
-          })
-      }
+      axios.post('api/employee', { company_name: company_Id?.id, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
+        .then(res => {
+          console.log("Employee added successfully!", res)
+          this.getAllEmployees()
+          this.setState({ employeeName: ''})
+        })
+        .catch(err => {
+          alert("Employee already exist!");
+          this.getAllEmployees()
+          this.setState({ employeeName: ''})
+        })
     }
   }
 
   handleEdit = (id: any, company: string) => {
-    const company_name  = this.state.companies.find(i => i.company_name === company)?.id
+    const company_name = this.state.companies.find(i => i.company_name === company)?.id
+    console.log('%c 🍫 company_name: ', 'font-size:20px;background-color: #E41A6A;color:#fff;', company_name);
     if (this.state.editEmployee.company_name === "" || this.state.editEmployee.employee_name === "" || this.state.editEmployee.employee_position === "") {
       alert("All fields are required!");
     } else {
@@ -324,8 +314,9 @@ class App extends react.Component<any, IState> {
           this.setIdEmpEdit('', '', '', '')
         })
         .catch(err => {
-          console.log("ERROR", err)
-          alert("Error.")
+          alert("Employee already exist!")
+          this.getAllEmployees()
+          this.setIdEmpEdit('', '', '', '')
         })
     }
   }
