@@ -31,7 +31,6 @@ interface ICompany {
 interface IProps {
     editEmployee: IEditEmployee,
     positions: IPosition[],
-    company_Ids: string[],
     employees: IEmployee[],
     companies: ICompany[],
     companyName: string,
@@ -96,6 +95,7 @@ function Employee(props: IProps) {
                         item.id === idEmpEdit ? <tr key={index}>
                             <td>
                                 <select className="editEmployeeCompany" value={companyNameById(editEmployee.company_name)} onChange={(e) => inputNewEmployeeCompany(e)}>
+                                    <option>-</option>
                                 {
                                     companies.map((i, index) => options(i.company_name, index))
                                 }</select>
