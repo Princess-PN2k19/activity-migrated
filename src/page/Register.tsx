@@ -1,4 +1,4 @@
-import './App.css';
+import '../App.css';
 import { Redirect } from "react-router-dom";
 
 interface IProps {

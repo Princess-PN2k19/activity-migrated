@@ -1,4 +1,4 @@
-import './App.css';
+import '../App.css';
 import axios from "axios";
 import { useHistory, Redirect } from "react-router-dom";
 import { useState } from 'react';

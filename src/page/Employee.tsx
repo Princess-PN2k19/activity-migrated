@@ -1,4 +1,4 @@
-import './App.css';
+import '../App.css';
 import Modal from "react-modal";
 import React, { useState } from "react";
 

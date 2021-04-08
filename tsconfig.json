@@ -21,6 +21,7 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
+    "src",
+    "../activity-migrated/src/helper/PrivateRoute.tsx"
   ]
 }

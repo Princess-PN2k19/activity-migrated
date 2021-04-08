@@ -7,12 +7,12 @@ import {
   Link
 } from "react-router-dom";
 import axios from 'axios';
-import Login from './Login';
-import Register from './Register';
-import Company from './Company';
-import Employee from './Employee';
-import PrivateRoute from './PrivateRoute';
-import image from './images/404.jpg';
+import Login from './page/Login';
+import Register from './page/Register';
+import Company from './page/Company';
+import Employee from './page/Employee';
+import PrivateRoute from './helper/PrivateRoute';
+import image from './image/404.jpg';
 
 interface ICompany {
   id: string,
@@ -61,7 +61,6 @@ interface IState {
   companyId: string,
   employeeName: string,
   position: string,
-  id: string,
   employee_id: string,
   positions: IPosition[],
   companies: ICompany[],
@@ -104,7 +103,6 @@ class App extends react.Component<any, IState> {
       companyId: '',
       employeeName: '',
       position: '',
-      id: '',
       employee_id: '',
       positions: [],
       companies: [],
@@ -125,7 +123,6 @@ class App extends react.Component<any, IState> {
     this.getAllUsernames()
     this.getAllPositions()
   }
-
 
   getAllCompanies = async () => {
     try {
@@ -194,6 +191,7 @@ class App extends react.Component<any, IState> {
     const { value } = e.target;
     this.setState({ editEmployee: { ...this.state.editEmployee, employee_position: value } });
   }
+
   inputNewEmployeeName = (e: any, index: number) => {
     const { value } = e.target;
     this.setState({ editEmployee: { ...this.state.editEmployee, employee_name: value } });
