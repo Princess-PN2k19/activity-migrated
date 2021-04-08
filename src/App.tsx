@@ -118,16 +118,39 @@ class App extends react.Component<any, IState> {
   }
 
   componentDidMount() {
-    this.getAllCompanies()
-    this.getAllEmployees()
-    this.getAllUsernames()
-    this.getAllPositions()
+    this.getAllCompany()
+    this.getAllEmployee()
+    this.getAllUsername()
+    this.getAllPosition()
   }
 
-  getAllCompanies = async () => {
+  getAllCompany = async () => {
     try {
       const data = await axios.get('api/companies')
       this.setState({ companies: data.data })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  getAllEmployee = async () => {
+    try {
+      const data = await axios.get('api/employees')
+      this.setState({ employees: data.data, companyName: this.state.companies[0].company_name })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  getAllUsername = async () => {
+    try {
+      const data = await axios.get('api/users')
+      this.setState({ users: data.data })
+      let unames: string[] = []
+      this.state.users.forEach(item => {
+        unames.push(item.username)
+      })
+      this.setState({ usernames: unames })
     } catch (error) {
       console.log(error)
     }
@@ -229,33 +252,10 @@ class App extends react.Component<any, IState> {
     }
   }
 
-  getAllPositions = async () => {
+  getAllPosition = async () => {
     try {
       const data = await axios.get('api/positions')
       this.setState({ positions: data.data, position: data.data[0].role })
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  getAllEmployees = async () => {
-    try {
-      const data = await axios.get('api/employees')
-      this.setState({ employees: data.data, companyName: this.state.companies[0].company_name })
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  getAllUsernames = async () => {
-    try {
-      const data = await axios.get('api/users')
-      this.setState({ users: data.data })
-      let unames: string[] = []
-      this.state.users.forEach(item => {
-        unames.push(item.username)
-      })
-      this.setState({ usernames: unames })
     } catch (error) {
       console.log(error)
     }
@@ -268,14 +268,14 @@ class App extends react.Component<any, IState> {
       axios.post('api/company', { company_name: this.state.companyAdd, status: "Active" })
         .then(res => {
           console.log(res, "Company added successfully!")
-          this.getAllCompanies()
-          this.getAllEmployees()
+          this.getAllCompany()
+          this.getAllEmployee()
           this.setState({ companyAdd: '' })
         })
         .catch(err => {
           alert("Company already exist!");
-          this.getAllCompanies()
-          this.getAllEmployees()
+          this.getAllCompany()
+          this.getAllEmployee()
           this.setState({ companyAdd: '' })
         })
     }
@@ -290,12 +290,12 @@ class App extends react.Component<any, IState> {
       axios.post('api/employee', { company_name: company_Id?.id, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
         .then(res => {
           console.log("Employee added successfully!", res)
-          this.getAllEmployees()
+          this.getAllEmployee()
           this.setState({ employeeName: '' })
         })
         .catch(err => {
           alert("Employee already exist!");
-          this.getAllEmployees()
+          this.getAllEmployee()
           this.setState({ employeeName: '' })
         })
     }
@@ -309,12 +309,12 @@ class App extends react.Component<any, IState> {
       axios.put('api/employees/' + id, { company_name: company_name, employee_name: this.state.editEmployee.employee_name, employee_position: this.state.editEmployee.employee_position })
         .then(res => {
           alert("Updated successfully!");
-          this.getAllEmployees()
+          this.getAllEmployee()
           this.setIdEmpEdit('', '', '', '')
         })
         .catch(err => {
           alert("Employee already exist!")
-          this.getAllEmployees()
+          this.getAllEmployee()
           this.setIdEmpEdit('', '', '', '')
         })
     }
@@ -324,7 +324,7 @@ class App extends react.Component<any, IState> {
     axios.delete('api/companies/' + id)
       .then(res => {
         console.log(res, "Deleted")
-        this.getAllCompanies()
+        this.getAllCompany()
       })
       .catch(err => {
         console.log(err)
@@ -335,7 +335,7 @@ class App extends react.Component<any, IState> {
     axios.delete('api/employees/' + id)
       .then(res => {
         console.log(res, "Deleted")
-        this.getAllEmployees()
+        this.getAllEmployee()
       })
       .catch(err => {
         console.log(err)
@@ -377,7 +377,7 @@ class App extends react.Component<any, IState> {
                   editCompany={this.state.editCompany}
                   newCompanyName={this.state.newCompanyName}
                   inputNewCompanyName={this.inputNewCompanyName}
-                  getAllCompanies={this.getAllCompanies}
+                  getAllCompany={this.getAllCompany}
                   setIdEdit={this.setIdEdit}
                   idEdit={this.state.idEdit}
                   companies={this.state.companies}

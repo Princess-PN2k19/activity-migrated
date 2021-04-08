@@ -23,13 +23,13 @@ interface IProps {
     deleteCompany: any,
     idEdit: string,
     setIdEdit: any,
-    getAllCompanies: any,
+    getAllCompany: any,
     inputNewCompanyName: any,
     newCompanyName: string,
 }
 
 function Companies(props: IProps) {
-    const { companies, editCompany, companyAdd, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompanies, inputNewCompanyName } = props;
+    const { companies, editCompany, companyAdd, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompany, inputNewCompanyName } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState('');
     const handleEdit = (id: any) => {
@@ -38,7 +38,7 @@ function Companies(props: IProps) {
         } else {
             axios.put('api/companies/' + id, { company_name: editCompany.company_name })
                 .then(res => {
-                    getAllCompanies()
+                    getAllCompany()
                     console.log("SUCCESS", res)
                     alert("Updated successfully!");
                     setIdEdit('', '')
@@ -46,7 +46,7 @@ function Companies(props: IProps) {
                 })
                 .catch(err => {
                     alert("Company already exist!");
-                    getAllCompanies()
+                    getAllCompany()
                     setIdEdit('', '')
                 })
         }
