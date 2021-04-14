@@ -1,6 +1,11 @@
 import '../App.css';
 import { Redirect } from "react-router-dom";
 
+interface ICompany {
+    id: string,
+    company_name: string
+}
+
 interface IProps {
     inputRegUname: any,
     inputRegPass: any,
@@ -8,12 +13,16 @@ interface IProps {
     register: any,
     regUname: string,
     regPass: string,
-    regConfirmPass: string
+    regConfirmPass: string,
+    companies: ICompany[],
+    companyName: string,
+    options: any,
+    inputCompId: any,
 }
 
 
 function Register(props: IProps) {
-    const { inputRegUname, inputRegPass, inputRegConfirmPass, register, regUname, regPass, regConfirmPass } = props;
+    const { inputRegUname, inputRegPass, inputRegConfirmPass, register, regUname, regPass, regConfirmPass, companies, companyName, options, inputCompId } = props;
 
     const auth = localStorage.getItem('username')
     if (auth) {
@@ -25,6 +34,8 @@ function Register(props: IProps) {
             <div className="register">
                 <div className="regContainer">
                     <h1>Register</h1><br /><br />
+                    <label className="labelForm">Company*:</label>
+                    <select value={companyName} onChange={inputCompId}>{companies.map((i, index) => options(i.company_name, index))}</select><br /><br />
                     <label className="labelForm">Username*:</label><br /><br />
                     <input name="username" type="text" value={regUname} onChange={inputRegUname} placeholder="Enter your username" required></input><br /><br /><br />
                     <label className="labelForm">Password*:</label><br /><br />

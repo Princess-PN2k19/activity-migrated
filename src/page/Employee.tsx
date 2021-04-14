@@ -48,10 +48,12 @@ interface IProps {
     inputNewPosition: any,
     inputNewEmployeeName: any,
     handleEdit: any,
+    handleEditAdmin: any,
+    userCompany: any
 }
 
 function Employee(props: IProps) {
-    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, deleteEmployee, setIdEmpEdit, idEmpEdit, editEmployee, companies } = props;
+    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, deleteEmployee, setIdEmpEdit, idEmpEdit, editEmployee, companies, userCompany, handleEditAdmin } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState('');
     const handleCancel = () => {
@@ -71,59 +73,120 @@ function Employee(props: IProps) {
         return item?.company_name
     }
 
+    if (userCompany === 'all') {
+        return (
+            <div className="employee">
+                <h1 className="header">Employees</h1>
+                <label className="labelEmployee">Company*:</label><label className="labelEmployee">Position*:</label><label className="labelEmployee">Employee Name*:</label><br /><br />
+                <select value={companyName} onChange={inputCompId}>{companies.map((i, index) => options(i.company_name, index))}</select>
+                { positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) => options(i.role, index))}</select>}
+                <input type="text" value={employeeName} name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
+                <button type="submit" onClick={addInputEmployee}>Add</button>
+                <br /><br />
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Position</th>
+                            <th>Employee Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {employees.map((item, index) => (
+                            item.id === idEmpEdit ? <tr key={index}>
+                                <td><select className="editEmployeeCompany" value={companyNameById(editEmployee.company_name)} onChange={(e) => inputNewEmployeeCompany(e)}>
+                                    <option>-</option>
+                                    {companies.map((i, index) => options(i.company_name, index))}
+                                </select>
+                                </td>
+                                <td><select className="editEmployeePosition" value={editEmployee.employee_position} onChange={(e) => inputNewPosition(e)}>
+                                    {positions.map((i, index) => options(i.role, index))}
+                                </select>
+                                </td>
+                                <td><input onChange={(e) => inputNewEmployeeName(e)} value={editEmployee.employee_name} type="text" className="editEmployeeName" placeholder="New employee name" />
+                                </td>
+                                <td><button onClick={() => handleEditAdmin(idEmpEdit, editEmployee.company_name)} type="submit" className="updateBtn">Save</button>
+                                    <button onClick={() => handleCancel()} type="submit" className="cancelBtn">Cancel</button>
+                                </td></tr> : <tr key={index}>
+                                    <td>{companies.find(company => company.id === item.company_name)?.company_name ? companies.find(company => company.id === item.company_name)?.company_name : "( Unavailable )"}</td>
+                                    <td>{item.employee_position}</td>
+                                    <td>{item.employee_name}</td>
+                                    <td><button className="editBtn" onClick={() => setIdEmpEdit(item.id, item.company_name, item.employee_name, item.employee_position)}>Edit</button>
+                                        <button className="deleteBtn" onClick={() => { toggleModal(); handleDelete(item.id) }}>Delete</button></td>
+                                    <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
+                                        <div>Are you sure you want to remove this employee?</div><br></br>
+                                        <button className="deleteBtn" onClick={() => { toggleModal(); deleteEmployee(idDelete); }}>Yes</button>
+                                        <button className="cancelBtn" onClick={toggleModal}>Cancel</button>
+                                    </Modal>
+                                </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
+        );
+    } else {
+        return (
+            <div className="employee">
+                <h1 className="header">{userCompany} Employees</h1><br/><br/>
+                <label className="labelEmployee">Position*:</label><label className="labelEmployee">Employee Name*:</label><br /><br />
+                {positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) => options(i.role, index))}</select>}
+                <input type="text" value={employeeName} name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
+                <button type="submit" onClick={addInputEmployee}>Add</button>
+                <br /><br />
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Employee Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {employees.map((item, index) =>  
+                        companies.find(company => company.id === item.company_name)?.company_name === userCompany ?
+                           (
+                            item.id === idEmpEdit
+                            ? (
+                                <tr key={index}>
+                                    <td><select className="editEmployeePosition" value={editEmployee.employee_position} onChange={(e) => inputNewPosition(e)}>
+                                        {positions.map((i, index) => options(i.role, index))}
+                                    </select>
+                                    </td>
+                                    <td><input onChange={(e) => inputNewEmployeeName(e)} value={editEmployee.employee_name} type="text" className="editEmployeeName" placeholder="New employee name" />
+                                    </td>
+                                    <td><button onClick={() => handleEdit(idEmpEdit)} type="submit" className="updateBtn">Save</button>
+                                        <button onClick={() => handleCancel()} type="submit" className="cancelBtn">Cancel</button>
+                                </td></tr>
+                            )
+                            :
+                            (
+                                <tr key={index}>
+                                            
+                                    <td>{item.employee_position}</td>
+                                    <td>{item.employee_name}</td>
+                                    <td><button className="editBtn" onClick={() => setIdEmpEdit(item.id, item.company_name, item.employee_name, item.employee_position)}>Edit</button>
+                                        <button className="deleteBtn" onClick={() => { toggleModal(); handleDelete(item.id) }}>Delete</button></td>
+                                    <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
+                                        <div>Are you sure you want to remove this employee?</div><br></br>
+                                        <button className="deleteBtn" onClick={() => { toggleModal(); deleteEmployee(idDelete); }}>Yes</button>
+                                        <button className="cancelBtn" onClick={toggleModal}>Cancel</button>
+                                    </Modal>
+                                </tr>
+                            )
+                           )
 
-    return (
-        <div className="employee">
-            <label className="labelEmployee">Company*:</label><label className="labelEmployee">Position*:</label><label className="labelEmployee">Employee Name*:</label><br /><br />
-            <select value={companyName} onChange={inputCompId}>{companies.map((i, index) => options(i.company_name, index))}</select>
-            { positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) => options(i.role, index))}</select>}
-            <input type="text" value={employeeName} name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
-            <button type="submit" onClick={addInputEmployee}>Add</button>
-            <br /><br />
-            <table>
-                <thead>
-                    <tr>
-                        <th>Company</th>
-                        <th>Position</th>
-                        <th>Employee Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {employees.map((item, index) => (
-                        item.id === idEmpEdit ? <tr key={index}>
-                            <td><select className="editEmployeeCompany" value={companyNameById(editEmployee.company_name)} onChange={(e) => inputNewEmployeeCompany(e)}>
-                                <option>-</option>
-                                {companies.map((i, index) => options(i.company_name, index))}
-                            </select>
-                            </td>
-                            <td><select className="editEmployeePosition" value={editEmployee.employee_position} onChange={(e) => inputNewPosition(e)}>
-                                {positions.map((i, index) => options(i.role, index))}
-                            </select>
-                            </td>
-                            <td><input onChange={(e) => inputNewEmployeeName(e)} value={editEmployee.employee_name} type="text" className="editEmployeeName" placeholder="New employee name" />
-                            </td>
-                            <td><button onClick={() => handleEdit(idEmpEdit, editEmployee.company_name)} type="submit" className="updateBtn">Save</button>
-                                <button onClick={() => handleCancel()} type="submit" className="cancelBtn">Cancel</button>
-                            </td></tr> : <tr key={index}>
-                                <td>{companies.find(company => company.id === item.company_name)?.company_name ? companies.find(company => company.id === item.company_name)?.company_name : "( Unavailable )"}</td>
-                                <td>{item.employee_position}</td>
-                                <td>{item.employee_name}</td>
-                                <td><button className="editBtn" onClick={() => setIdEmpEdit(item.id, item.company_name, item.employee_name, item.employee_position)}>Edit</button>
-                                    <button className="deleteBtn" onClick={() => { toggleModal(); handleDelete(item.id) }}>Delete</button></td>
-                                <Modal isOpen={isOpen} className="mymodal" overlayClassName="myoverlay">
-                                    <div>Are you sure you want to remove this employee?</div><br></br>
-                                    <button className="deleteBtn" onClick={() => { toggleModal(); deleteEmployee(idDelete); }}>Yes</button>
-                                    <button className="cancelBtn" onClick={toggleModal}>Cancel</button>
-                                </Modal>
-                            </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                        :(  null )
+                            
+                    )}
+                        
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
 
-    );
 }
 
 export default Employee;

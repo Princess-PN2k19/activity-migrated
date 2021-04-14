@@ -7,20 +7,20 @@ interface IProps {
     exact?: any
 }
 
-function PrivateRoute (props: IProps) {
+function PrivateRoute(props: IProps) {
     const { children, ...rest } = props;
     const auth = localStorage.getItem('username')
 
     const routeComponent = () => {
-        if(auth) {
+        if (auth) {
             return (children)
         } else {
-            return (<Redirect to={{pathname: "login"}}/>)
+            return (<Redirect to={{ pathname: "login" }} />)
         }
     }
 
     return (
-        <Route {...rest} render={routeComponent}/>
+        <Route {...rest} render={routeComponent} />
     )
 };
 

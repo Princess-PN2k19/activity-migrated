@@ -43,8 +43,22 @@ interface IEditEmployee {
   employee_position: string
 }
 
+interface ICurrentUser {
+  company: string,
+  username: string
+}
+
+interface IUser {
+  id: string,
+  company: string,
+  password: string,
+  role: string,
+  username: string
+}
+
 interface IState {
   companyAdd: string,
+  currentUser: ICurrentUser,
   editCompany: IEditCompany,
   editEmployee: IEditEmployee,
   login: boolean,
@@ -66,12 +80,15 @@ interface IState {
   companies: ICompany[],
   employees: IEmployee[],
   company_Names: string[],
+  allUsers: IUser[],
   usernames: string[],
   users: any[],
   apiResponse: string,
   idEdit: string,
   idEmpEdit: string,
-  idEmpDelete: string
+  idEmpDelete: string,
+  userRole: any,
+  userCompany: any
 }
 
 class App extends react.Component<any, IState> {
@@ -79,6 +96,10 @@ class App extends react.Component<any, IState> {
     super(props)
     this.state = {
       companyAdd: '',
+      currentUser: {
+        company: '',
+        username: ''
+      },
       editCompany: {
         id: '',
         company_name: ''
@@ -109,11 +130,14 @@ class App extends react.Component<any, IState> {
       employees: [],
       company_Names: [],
       usernames: [],
+      allUsers: [],
       users: [],
       apiResponse: '',
       idEdit: '',
       idEmpEdit: '',
-      idEmpDelete: ''
+      idEmpDelete: '',
+      userRole: '',
+      userCompany: localStorage.getItem("userCompany")?localStorage.getItem("userCompany"):''
     };
   }
 
@@ -122,7 +146,24 @@ class App extends react.Component<any, IState> {
     this.getAllEmployee()
     this.getAllUsername()
     this.getAllPosition()
+    this.getAllUser()
   }
+
+  setCurrentUser = (company: string, username: string) => {
+    this.setState({ currentUser: {company, username} })
+    const current = this.state.allUsers.find(user => user.username === this.state.currentUser.username)
+    this.setState({ userRole: current?.role, userCompany: company })
+  }
+
+  getAllUser = async () => {
+    try {
+      const data = await axios.get('api/users')
+      this.setState({ allUsers: data.data })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
 
   getAllCompany = async () => {
     try {
@@ -158,7 +199,7 @@ class App extends react.Component<any, IState> {
 
   logout = () => {
     this.setState({ login: true })
-    localStorage.removeItem("username");
+    localStorage.clear();
   }
 
   options = (i: number, index: number) => {
@@ -221,10 +262,12 @@ class App extends react.Component<any, IState> {
   }
 
   register = () => {
-    const { regUname, regPass, regConfirmPass } = this.state;
+    const { regUname, regPass, regConfirmPass, companyName} = this.state;
     const newAccount = {
       username: regUname,
-      password: regPass
+      password: regPass,
+      role: 'HR',
+      company: companyName
     }
     if (regUname === '' || regPass === '' || regConfirmPass === '') {
       alert("All fields are required!")
@@ -282,7 +325,7 @@ class App extends react.Component<any, IState> {
   }
 
   addInputEmployee = () => {
-    const company_Id = this.state.companies.find(company => company.company_name === this.state.companyName)
+    const company_Id = this.state.companies.find(company => company.company_name === this.state.userCompany)
     if (this.state.employeeName === '' || this.state.companyName === '') {
       alert("All fields are required!")
       this.setState({ employeeName: '' })
@@ -301,8 +344,27 @@ class App extends react.Component<any, IState> {
     }
   }
 
-  handleEdit = (id: any, company: string) => {
+  handleEditAdmin = (id: any, company: string) => {
     const company_name = this.state.companies.find(i => i.company_name === company)?.id
+    if (this.state.editEmployee.company_name === "" || this.state.editEmployee.employee_name === "" || this.state.editEmployee.employee_position === "") {
+      alert("All fields are required!");
+    } else {
+      axios.put('api/employees/' + id, { company_name: company_name, employee_name: this.state.editEmployee.employee_name, employee_position: this.state.editEmployee.employee_position })
+        .then(res => {
+          alert("Updated successfully!");
+          this.getAllEmployee()
+          this.setIdEmpEdit('', '', '', '')
+        })
+        .catch(err => {
+          alert("Employee already exist!")
+          this.getAllEmployee()
+          this.setIdEmpEdit('', '', '', '')
+        })
+    }
+  }
+
+  handleEdit = (id: any) => {
+    const company_name = this.state.companies.find(i => i.company_name === this.state.userCompany)?.id
     if (this.state.editEmployee.company_name === "" || this.state.editEmployee.employee_name === "" || this.state.editEmployee.employee_position === "") {
       alert("All fields are required!");
     } else {
@@ -362,17 +424,16 @@ class App extends react.Component<any, IState> {
           <Switch>
             <Route exact path="/login">
               <Link to="/register"><button className="routeBtn">Register</button></Link>
-              <Login />
+              <Login setCurrentUser={this.setCurrentUser} companies={this.state.companies} options={this.options} />
             </Route>
             <Route exact path="/register">
               <Link to="/login"><button className="routeBtn">Login</button></Link>
-              <Register regUname={this.state.regUname} regPass={this.state.regPass} regConfirmPass={this.state.regConfirmPass} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register}></Register>
+              <Register regUname={this.state.regUname} regPass={this.state.regPass} regConfirmPass={this.state.regConfirmPass} inputRegUname={this.inputRegUname} inputRegPass={this.inputRegPass} inputRegConfirmPass={this.inputRegConfirmPass} register={this.register} companies={this.state.companies} options={this.options} inputCompId={this.inputCompId} companyName={this.state.companyName}></Register>
             </Route>
 
             <PrivateRoute exact path="/">
               <div className="activity">
                 <button className="signOutBtn" onClick={this.logout}>Sign Out</button><br /><br />
-                <h1 className="header">Companies</h1>
                 <Company
                   editCompany={this.state.editCompany}
                   newCompanyName={this.state.newCompanyName}
@@ -384,13 +445,14 @@ class App extends react.Component<any, IState> {
                   companyAdd={this.state.companyAdd}
                   deleteCompany={this.deleteCompany}
                   inputCompName={this.inputCompName}
-                  addInputCompany={this.addInputCompany} />
+                  addInputCompany={this.addInputCompany}
+                  userRole={this.state.userRole} />
               </div>
               <div className="employees">
-                <h1 className="header">Employees</h1>
                 <Employee
                   companies={this.state.companies}
                   editEmployee={this.state.editEmployee}
+                  handleEditAdmin={this.handleEditAdmin}
                   handleEdit={this.handleEdit}
                   inputNewEmployeeName={this.inputNewEmployeeName}
                   inputNewPosition={this.inputNewPosition}
@@ -407,7 +469,8 @@ class App extends react.Component<any, IState> {
                   inputEmpName={this.inputEmpName}
                   inputEmpPosition={this.inputEmpPosition}
                   addInputEmployee={this.addInputEmployee}
-                  options={this.options} />
+                  options={this.options}
+                  userCompany={this.state.userCompany} />
               </div>
             </PrivateRoute>
 
