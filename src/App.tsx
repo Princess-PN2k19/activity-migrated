@@ -13,83 +13,8 @@ import Company from './page/Company';
 import Employee from './page/Employee';
 import PrivateRoute from './helper/PrivateRoute';
 import image from './image/404.jpg';
+import { IState } from './types'
 
-interface ICompany {
-  id: string,
-  company_name: string
-}
-
-interface IEditCompany {
-  id: string,
-  company_name: string
-}
-
-interface IPosition {
-  id: string,
-  role: string
-}
-
-interface IEmployee {
-  company_name: string,
-  id: string,
-  employee_name: string,
-  employee_position: string
-}
-
-interface IEditEmployee {
-  company_name: string,
-  id: string,
-  employee_name: string,
-  employee_position: string
-}
-
-interface ICurrentUser {
-  company: string,
-  username: string
-}
-
-interface IUser {
-  id: string,
-  company: string,
-  password: string,
-  role: string,
-  username: string
-}
-
-interface IState {
-  companyAdd: string,
-  currentUser: ICurrentUser,
-  editCompany: IEditCompany,
-  editEmployee: IEditEmployee,
-  login: boolean,
-  regUname: string,
-  regPass: string,
-  regConfirmPass: string,
-  uname: string,
-  pass: string,
-  companyName: string,
-  newCompanyName: string,
-  newEmployeeCompany: string,
-  newEmployeeName: string,
-  newPosition: string,
-  companyId: string,
-  employeeName: string,
-  position: string,
-  employee_id: string,
-  positions: IPosition[],
-  companies: ICompany[],
-  employees: IEmployee[],
-  company_Names: string[],
-  allUsers: IUser[],
-  usernames: string[],
-  users: any[],
-  apiResponse: string,
-  idEdit: string,
-  idEmpEdit: string,
-  idEmpDelete: string,
-  userRole: any,
-  userCompany: any
-}
 
 class App extends react.Component<any, IState> {
   constructor(props: any) {
@@ -97,7 +22,6 @@ class App extends react.Component<any, IState> {
     this.state = {
       companyAdd: '',
       currentUser: {
-        company: '',
         username: ''
       },
       editCompany: {
@@ -137,7 +61,7 @@ class App extends react.Component<any, IState> {
       idEmpEdit: '',
       idEmpDelete: '',
       userRole: localStorage.getItem("userRole")?localStorage.getItem("userCompany"):'',
-      userCompany: localStorage.getItem("userCompany")?localStorage.getItem("userCompany"):''
+      userCompany: localStorage.getItem("userCompany")?localStorage.getItem("userCompany"): 'all'
     };
   }
 
@@ -149,11 +73,13 @@ class App extends react.Component<any, IState> {
     this.getAllUser()
   }
 
-  setCurrentUser = (company: string, username: string) => {
-    this.setState({ currentUser: {company, username} })
+  setCurrentUser = (username: string) => {
+    this.setState({ currentUser: {username} })
     const current = this.state.allUsers.find(user => user.username === this.state.currentUser.username)
-    this.setState({ userRole: current?.role, userCompany: company })
+    const userCompanyy = this.state.companies.find(item => item.id === current?.company)?.company_name
+    userCompanyy?this.setState({ userRole: current?.role, userCompany: userCompanyy }):this.setState({ userRole: current?.role, userCompany: "all" })
     localStorage.setItem("userRole", this.state.userRole)
+    userCompanyy?localStorage.setItem("userCompany", userCompanyy):localStorage.setItem("userCompany", "all")
   }
 
   getAllUser = async () => {
@@ -170,6 +96,7 @@ class App extends react.Component<any, IState> {
     try {
       const data = await axios.get('api/companies')
       this.setState({ companies: data.data })
+      this.getAllEmployee()
     } catch (error) {
       console.log(error)
     }
@@ -264,11 +191,12 @@ class App extends react.Component<any, IState> {
 
   register = () => {
     const { regUname, regPass, regConfirmPass, companyName} = this.state;
+    const company_Id = this.state.companies.find(company => company.company_name === this.state.companyName)
     const newAccount = {
       username: regUname,
       password: regPass,
       role: 'HR',
-      company: companyName
+      company: company_Id?.id
     }
     if (companyName === '' || regUname === '' || regPass === '' || regConfirmPass === '') {
       alert("All fields are required!")
@@ -284,8 +212,10 @@ class App extends react.Component<any, IState> {
         } else {
           axios.post('api/user/register', newAccount)
             .then(res => {
-              alert("Sucessfully registered.");
               localStorage.setItem("username", regUname);
+              localStorage.setItem("userRole", newAccount.role);
+              localStorage.setItem("userCompany", companyName)
+              alert("Sucessfully registered.");
               this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
             })
             .catch(err => {
@@ -446,7 +376,7 @@ class App extends react.Component<any, IState> {
           <Switch>
             <Route exact path="/login">
               <Link to="/register"><button className="routeBtn">Register</button></Link>
-              <Login setCurrentUser={this.setCurrentUser} companies={this.state.companies} options={this.options} />
+              <Login setCurrentUser={this.setCurrentUser} />
             </Route>
             <Route exact path="/register">
               <Link to="/login"><button className="routeBtn">Login</button></Link>
@@ -467,8 +397,7 @@ class App extends react.Component<any, IState> {
                   companyAdd={this.state.companyAdd}
                   deleteCompany={this.deleteCompany}
                   inputCompName={this.inputCompName}
-                  addInputCompany={this.addInputCompany}
-                  userRole={this.state.userRole} />
+                  addInputCompany={this.addInputCompany} />
               </div>
               <div className="employees">
                 <Employee

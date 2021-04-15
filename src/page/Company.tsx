@@ -25,12 +25,11 @@ interface IProps {
     setIdEdit: any,
     getAllCompany: any,
     inputNewCompanyName: any,
-    newCompanyName: string,
-    userRole: any
+    newCompanyName: string
 }
 
 function Companies(props: IProps) {
-    const { companies, editCompany, companyAdd, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompany, inputNewCompanyName, userRole } = props;
+    const { companies, editCompany, companyAdd, inputCompName, addInputCompany, deleteCompany, setIdEdit, idEdit, getAllCompany, inputNewCompanyName } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState('');
     const handleEdit = (id: any) => {

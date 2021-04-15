@@ -3,30 +3,19 @@ import axios from "axios";
 import { useHistory, Redirect } from "react-router-dom";
 import { useState } from 'react';
 
-interface ICompany {
-    id: string,
-    company_name: string
-}
-
 interface IProps {
-    companies: ICompany[],
-    options: any,
     setCurrentUser: any
 }
 
 function Login(props: IProps) {
-    const { companies, options, setCurrentUser } = props;
+    const { setCurrentUser } = props;
     const [uname, setUname] = useState("")
     const [pass, setPass] = useState("")
-    const [comp, setComp] = useState("all")
     const handleUname = (e: any) => {
         setUname(e.target.value)
     }
     const handlePass = (e: any) => {
         setPass(e.target.value)
-    }
-    const handleComp = (e: any) => {
-        setComp(e.target.value)
     }
 
     const history = useHistory();
@@ -34,8 +23,7 @@ function Login(props: IProps) {
     const LoginFunction = () => {
         const userAccount = {
             username: uname,
-            password: pass,
-            company: comp
+            password: pass
         };
         if (uname === '' || pass === '') {
             alert("All fields are required!")
@@ -43,9 +31,8 @@ function Login(props: IProps) {
             axios.post('api/user/login', userAccount)
                 .then(res => {
                     if (res.data.error === false) {
-                        setCurrentUser(userAccount.company, userAccount.username)
+                        setCurrentUser(userAccount.username)
                         localStorage.setItem("username", res.data.user[0].username);
-                        localStorage.setItem("userCompany", userAccount.company)
                         history.push('/')
                     } else {
                         console.log("Invalid credentials!")
@@ -73,8 +60,6 @@ function Login(props: IProps) {
             <div className="login">
                 <div className="container">
                     <h1>Login</h1><br /><br />
-                    <label className="labelForm">Company*:</label>
-                    <select value={comp} onChange={handleComp}><option>(Admin)</option>{companies.map((i, index) => options(i.company_name, index))}</select><br /><br />
                     <label className="labelForm">Username*:</label><br /><br />
                     <input name="username" type="text" value={uname} onChange={handleUname} placeholder="Enter your username" required></input><br /><br /><br />
                     <label className="labelForm">Password*:</label><br /><br />
