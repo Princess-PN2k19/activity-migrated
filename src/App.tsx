@@ -136,7 +136,7 @@ class App extends react.Component<any, IState> {
       idEdit: '',
       idEmpEdit: '',
       idEmpDelete: '',
-      userRole: '',
+      userRole: localStorage.getItem("userRole")?localStorage.getItem("userCompany"):'',
       userCompany: localStorage.getItem("userCompany")?localStorage.getItem("userCompany"):''
     };
   }
@@ -153,6 +153,7 @@ class App extends react.Component<any, IState> {
     this.setState({ currentUser: {company, username} })
     const current = this.state.allUsers.find(user => user.username === this.state.currentUser.username)
     this.setState({ userRole: current?.role, userCompany: company })
+    localStorage.setItem("userRole", this.state.userRole)
   }
 
   getAllUser = async () => {
@@ -269,8 +270,9 @@ class App extends react.Component<any, IState> {
       role: 'HR',
       company: companyName
     }
-    if (regUname === '' || regPass === '' || regConfirmPass === '') {
+    if (companyName === '' || regUname === '' || regPass === '' || regConfirmPass === '') {
       alert("All fields are required!")
+      this.setState({ regUname: '', regPass: '', regConfirmPass: '' })
     } else {
       if (this.state.usernames.includes(regUname)) {
         alert("Username already exist!")
@@ -320,6 +322,26 @@ class App extends react.Component<any, IState> {
           this.getAllCompany()
           this.getAllEmployee()
           this.setState({ companyAdd: '' })
+        })
+    }
+  }
+
+  addInputEmployeeAdmin = () => {
+    const company_Id = this.state.companies.find(company => company.company_name === this.state.companyName)
+    if (this.state.employeeName === '' || this.state.companyName === '') {
+      alert("All fields are required!")
+      this.setState({ employeeName: '' })
+    } else {
+      axios.post('api/employee', { company_name: company_Id?.id, employee_name: this.state.employeeName, employee_position: this.state.position, status: "Active" })
+        .then(res => {
+          console.log("Employee added successfully!", res)
+          this.getAllEmployee()
+          this.setState({ employeeName: '' })
+        })
+        .catch(err => {
+          alert("Employee already exist!");
+          this.getAllEmployee()
+          this.setState({ employeeName: '' })
         })
     }
   }
@@ -469,6 +491,7 @@ class App extends react.Component<any, IState> {
                   inputEmpName={this.inputEmpName}
                   inputEmpPosition={this.inputEmpPosition}
                   addInputEmployee={this.addInputEmployee}
+                  addInputEmployeeAdmin={this.addInputEmployeeAdmin}
                   options={this.options}
                   userCompany={this.state.userCompany} />
               </div>

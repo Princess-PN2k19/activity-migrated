@@ -40,6 +40,7 @@ interface IProps {
     inputEmpName: any,
     inputEmpPosition: any,
     addInputEmployee: any,
+    addInputEmployeeAdmin: any,
     options: any,
     deleteEmployee: any,
     setIdEmpEdit: any,
@@ -53,7 +54,7 @@ interface IProps {
 }
 
 function Employee(props: IProps) {
-    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, options, deleteEmployee, setIdEmpEdit, idEmpEdit, editEmployee, companies, userCompany, handleEditAdmin } = props;
+    const { handleEdit, inputNewEmployeeName, inputNewPosition, inputNewEmployeeCompany, positions, employees, companyName, employeeName, position, inputCompId, inputEmpName, inputEmpPosition, addInputEmployee, addInputEmployeeAdmin, options, deleteEmployee, setIdEmpEdit, idEmpEdit, editEmployee, companies, userCompany, handleEditAdmin } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState('');
     const handleCancel = () => {
@@ -81,7 +82,7 @@ function Employee(props: IProps) {
                 <select value={companyName} onChange={inputCompId}>{companies.map((i, index) => options(i.company_name, index))}</select>
                 { positions.length && <select value={position} onChange={inputEmpPosition}>{positions.map((i, index) => options(i.role, index))}</select>}
                 <input type="text" value={employeeName} name="employeeName" onChange={inputEmpName} placeholder="Enter an employee name" required></input>
-                <button type="submit" onClick={addInputEmployee}>Add</button>
+                <button type="submit" onClick={addInputEmployeeAdmin}>Add</button>
                 <br /><br />
                 <table>
                     <thead>

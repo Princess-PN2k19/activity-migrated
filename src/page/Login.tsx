@@ -37,11 +37,9 @@ function Login(props: IProps) {
             password: pass,
             company: comp
         };
-        setCurrentUser(userAccount.company, userAccount.username)
         if (uname === '' || pass === '') {
             alert("All fields are required!")
         } else {
-            console.log('%c 🍹 userAccount: ', 'font-size:20px;background-color: #ED9EC7;color:#fff;', userAccount);
             axios.post('api/user/login', userAccount)
                 .then(res => {
                     if (res.data.error === false) {
@@ -76,7 +74,7 @@ function Login(props: IProps) {
                 <div className="container">
                     <h1>Login</h1><br /><br />
                     <label className="labelForm">Company*:</label>
-                    <select value={comp} onChange={handleComp}><option>All</option>{companies.map((i, index) => options(i.company_name, index))}</select><br /><br />
+                    <select value={comp} onChange={handleComp}><option>(Admin)</option>{companies.map((i, index) => options(i.company_name, index))}</select><br /><br />
                     <label className="labelForm">Username*:</label><br /><br />
                     <input name="username" type="text" value={uname} onChange={handleUname} placeholder="Enter your username" required></input><br /><br /><br />
                     <label className="labelForm">Password*:</label><br /><br />

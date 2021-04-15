@@ -65,7 +65,7 @@ function Companies(props: IProps) {
         setIsOpen(!isOpen);
     }
 
-    if (userRole === 'Super Admin') {
+    if (localStorage.getItem("userRole") === 'Super Admin') {
         return (
             <div className="company">
                 <h1 className="header">Companies</h1>
